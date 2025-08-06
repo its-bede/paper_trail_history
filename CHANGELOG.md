@@ -7,12 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.0] - 2025-08-06
+
+### Released
+- **🚀 Initial Release**: Successfully published to RubyGems.org as `paper_trail_history` v0.1.0
+- **📦 Gem Available**: Install with `gem install paper_trail_history`
+- **🔗 RubyGems**: https://rubygems.org/gems/paper_trail_history
+
 ### Changed
 - **CI Optimization**: Moved RuboCop to separate lint job to avoid redundant execution across matrix builds
 - **Timeout Reduction**: Reduced Rails server startup timeout from 30s to 10s in CI tests
 - **Linting Configuration**: Replaced rubocop-rails-omakase with default rubocop-rails configuration
-
-## [0.1.0] - 2025-08-06
 
 ### Added
 
