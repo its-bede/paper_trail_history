@@ -29,3 +29,18 @@
 
 en:
   hello: "Hello world"
+  
+  activerecord:
+    models:
+      user:
+        one: User
+        other: Users
+      post:
+        one: Blog Post
+        other: Blog Posts
+      comment:
+        one: Comment
+        other: Comments
+      product:
+        one: Product
+        other: Products

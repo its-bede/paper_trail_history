@@ -1,0 +1,16 @@
+de:
+  paper_trail_history:
+    errors:
+      version_not_found: "Version nicht gefunden"
+      model_not_found: "Modell '%{model_name}' nicht gefunden oder nicht verfolgbar"
+      restore_failed: "Wiederherstellung fehlgeschlagen: %{error}"
+      cannot_restore_create: "Erstell-Ereignisse können nicht wiederhergestellt werden"
+    messages:
+      restore_from_deletion: "Datensatz aus Löschung wiederhergestellt"
+      restore_to_previous: "Datensatz auf vorherige Version wiederhergestellt"
+    events:
+      created: "Erstellt"
+      updated: "Aktualisiert"
+      deleted: "Gelöscht"
+    actors:
+      system: "System"

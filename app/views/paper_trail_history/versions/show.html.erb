@@ -1,0 +1,134 @@
+<nav aria-label="breadcrumb">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><%= link_to "Models", models_path %></li>
+    <li class="breadcrumb-item"><%= link_to @trackable_model.human_name, model_path(@trackable_model.name) %></li>
+    <li class="breadcrumb-item active">Version #<%= @version.id %></li>
+  </ol>
+</nav>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h1>Version Details</h1>
+  <div>
+    <% if @decorated_version.can_restore? %>
+      <%= link_to "Restore This Version", 
+          restore_version_path(@version), 
+          method: :patch,
+          data: { 
+            confirm: "Are you sure you want to restore this version? This will overwrite the current data." 
+          },
+          class: "btn btn-warning" %>
+    <% end %>
+    <%= link_to "View Record", model_record_path(@trackable_model.name, @version.item_id), class: "btn btn-outline-primary" %>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-md-6 mb-4">
+    <div class="card">
+      <div class="card-body">
+        <h5 class="card-title">Version Information</h5>
+        <dl class="row">
+          <dt class="col-sm-4">Version ID:</dt>
+          <dd class="col-sm-8"><code><%= @version.id %></code></dd>
+          
+          <dt class="col-sm-4">Event:</dt>
+          <dd class="col-sm-8">
+            <span class="badge bg-<%= @decorated_version.event_class %>">
+              <i class="bi bi-<%= @decorated_version.event == 'create' ? 'plus' : @decorated_version.event == 'update' ? 'pencil' : 'trash' %>"></i>
+              <%= @decorated_version.event_label %>
+            </span>
+          </dd>
+          
+          <dt class="col-sm-4">When:</dt>
+          <dd class="col-sm-8"><%= @decorated_version.formatted_created_at %></dd>
+          
+          <dt class="col-sm-4">Who:</dt>
+          <dd class="col-sm-8"><%= @decorated_version.whodunnit_display %></dd>
+          
+          <dt class="col-sm-4">Item:</dt>
+          <dd class="col-sm-8">
+            <%= link_to @decorated_version.item_display_name, 
+                model_record_path(@trackable_model.name, @version.item_id),
+                class: "text-decoration-none" %>
+          </dd>
+        </dl>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-6 mb-4">
+    <% if @decorated_version.can_restore? %>
+      <div class="card border-warning">
+        <div class="card-body">
+          <h5 class="card-title text-warning">
+            <i class="bi bi-exclamation-triangle"></i>
+            Restore Version
+          </h5>
+          <p class="card-text">
+            This will restore the record to the state it was in at this version.
+            <strong>This action cannot be undone</strong>, but will create a new version entry.
+          </p>
+          <%= link_to "Restore This Version", 
+              restore_version_path(@version), 
+              method: :patch,
+              data: { 
+                confirm: "Are you sure you want to restore this version? This will overwrite the current data and cannot be undone." 
+              },
+              class: "btn btn-warning" %>
+        </div>
+      </div>
+    <% else %>
+      <div class="card border-secondary">
+        <div class="card-body">
+          <h5 class="card-title text-muted">
+            <i class="bi bi-info-circle"></i>
+            Cannot Restore
+          </h5>
+          <p class="card-text text-muted">
+            This version represents the initial creation of the record and cannot be restored.
+          </p>
+        </div>
+      </div>
+    <% end %>
+  </div>
+</div>
+
+<% if @decorated_version.changed_attributes.any? %>
+  <div class="card">
+    <div class="card-header">
+      <h5 class="mb-0">
+        <i class="bi bi-code-square"></i>
+        Changes Made
+      </h5>
+    </div>
+    <div class="card-body">
+      <div class="diff-container">
+        <% @decorated_version.changed_attributes.each do |change| %>
+          <div class="diff-section mb-4">
+            <div class="diff-header">
+              <i class="bi bi-at"></i>
+              <strong><%= change[:attribute] %></strong>
+            </div>
+            <div class="diff-content">
+              <div class="diff-line diff-removed">
+                <span class="diff-marker">-</span>
+                <code><%= change[:old_value] %></code>
+              </div>
+              <div class="diff-line diff-added">
+                <span class="diff-marker">+</span>
+                <code><%= change[:new_value] %></code>
+              </div>
+            </div>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+<% else %>
+  <div class="card">
+    <div class="card-body text-center text-muted">
+      <i class="bi bi-info-circle"></i>
+      No detailed change information available for this version.
+    </div>
+  </div>
+<% end %>

@@ -1,0 +1,11 @@
+# frozen_string_literal: true
+
+source 'https://rubygems.org'
+
+# Specify your gem's dependencies in paper_trail_history.gemspec.
+gemspec path: '../'
+
+gem 'puma', '~> 6.0'
+gem 'rails', '~> 7.2.0'
+gem 'sprockets-rails'
+gem 'sqlite3', '~> 2.0'
