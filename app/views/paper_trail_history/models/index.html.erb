@@ -1,0 +1,65 @@
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h1>Trackable Models</h1>
+  <span class="badge bg-secondary"><%= @trackable_models.count %> models</span>
+</div>
+
+<% if @trackable_models.any? %>
+  <div class="card">
+    <div class="card-body">
+      <div class="table-responsive">
+        <table class="table table-striped">
+          <thead>
+            <tr>
+              <th><i class="bi bi-database-fill"></i> Model</th>
+              <th>Table Name</th>
+              <th>Version Table</th>
+              <th>Total Versions</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% @trackable_models.each do |model| %>
+              <tr>
+                <td>
+                  <strong><%= model.human_name %></strong>
+                  <br>
+                  <small class="text-muted"><%= model.name %></small>
+                </td>
+                <td>
+                  <code><%= model.table_name %></code>
+                </td>
+                <td>
+                  <code><%= model.version_table_name %></code>
+                  <br>
+                  <small class="text-muted"><%= model.version_class.name %></small>
+                </td>
+                <td>
+                  <span class="badge bg-primary"><%= model.total_versions_count %></span>
+                </td>
+                <td>
+                  <div class="btn-group btn-group-sm" role="group">
+                    <%= link_to model_path(model.name), 
+                        class: "btn btn-outline-secondary", 
+                        data: { bs_toggle: "tooltip", bs_title: "View Model Details" } do %>
+                      <i class="bi bi-eye"></i>
+                    <% end %>
+                    <%= link_to versions_model_path(model.name), 
+                        class: "btn btn-primary", 
+                        data: { bs_toggle: "tooltip", bs_title: "View All Versions" } do %>
+                      <i class="bi bi-clock-history"></i>
+                    <% end %>
+                  </div>
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+<% else %>
+  <div class="alert alert-info">
+    <i class="bi bi-info-circle"></i>
+    No trackable models found. Make sure you have models with <code>has_paper_trail</code> configured.
+  </div>
+<% end %>

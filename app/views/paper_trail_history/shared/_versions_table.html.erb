@@ -1,0 +1,60 @@
+<div class="table-responsive">
+  <table class="table table-striped">
+    <thead>
+      <tr>
+        <th>Version</th>
+        <th>Event</th>
+        <th>When</th>
+        <th>Who</th>
+        <% if local_assigns[:show_item_link] %>
+          <th>Item</th>
+        <% end %>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% versions.each do |decorated_version| %>
+        <tr>
+          <td>
+            <%= link_to "##{decorated_version.version.id}", 
+                version_path(decorated_version.version.id), 
+                class: "text-decoration-none" %>
+          </td>
+          <td>
+            <span class="badge bg-<%= decorated_version.event_class %>">
+              <i class="bi bi-<%= decorated_version.event == 'create' ? 'plus' : decorated_version.event == 'update' ? 'pencil' : 'trash' %>"></i>
+              <%= decorated_version.event_label %>
+            </span>
+          </td>
+          <td>
+            <small><%= decorated_version.formatted_created_at %></small>
+          </td>
+          <td>
+            <small><%= decorated_version.whodunnit_display %></small>
+          </td>
+          <% if local_assigns[:show_item_link] %>
+            <td>
+              <%= link_to decorated_version.item_display_name,
+                  model_record_path(decorated_version.version.item_type, decorated_version.version.item_id),
+                  class: "text-decoration-none" %>
+            </td>
+          <% end %>
+          <td>
+            <div class="btn-group btn-group-sm">
+              <%= link_to "View", version_path(decorated_version.version.id), class: "btn btn-outline-primary btn-sm" %>
+              <% if decorated_version.can_restore? %>
+                <%= link_to "Restore", 
+                    restore_version_path(decorated_version.version.id), 
+                    method: :patch,
+                    data: { 
+                      confirm: "Are you sure you want to restore this version?" 
+                    },
+                    class: "btn btn-outline-warning btn-sm" %>
+              <% end %>
+            </div>
+          </td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+</div>

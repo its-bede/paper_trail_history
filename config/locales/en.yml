@@ -1,0 +1,16 @@
+en:
+  paper_trail_history:
+    errors:
+      version_not_found: "Version not found"
+      model_not_found: "Model '%{model_name}' not found or not trackable"
+      restore_failed: "Failed to restore: %{error}"
+      cannot_restore_create: "Cannot restore create events"
+    messages:
+      restore_from_deletion: "Record restored from deletion"
+      restore_to_previous: "Record restored to previous version"
+    events:
+      created: "Created"
+      updated: "Updated" 
+      deleted: "Deleted"
+    actors:
+      system: "System"

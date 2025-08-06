@@ -1,0 +1,36 @@
+<nav aria-label="breadcrumb">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><%= link_to "Models", models_path %></li>
+    <li class="breadcrumb-item"><%= link_to @trackable_model.human_name, model_path(@trackable_model.name) %></li>
+    <li class="breadcrumb-item"><%= link_to "Record ##{@record_id}", model_record_path(@trackable_model.name, @record_id) %></li>
+    <li class="breadcrumb-item active">All Versions</li>
+  </ol>
+</nav>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h1>
+    All Versions - <%= @trackable_model.human_name %> #<%= @record_id %>
+    <% if @record.nil? %>
+      <span class="badge bg-danger">Deleted</span>
+    <% end %>
+  </h1>
+  <span class="badge bg-secondary"><%= @versions.count %> versions</span>
+</div>
+
+<%= render "paper_trail_history/shared/version_filters", 
+    available_events: @available_events, 
+    available_whodunnits: nil %>
+
+<div class="card">
+  <div class="card-body">
+    <% if @decorated_versions.any? %>
+      <%= render "paper_trail_history/shared/versions_table", versions: @decorated_versions %>
+    <% else %>
+      <div class="text-center py-4">
+        <i class="bi bi-inbox display-1 text-muted"></i>
+        <p class="text-muted">No versions found matching your criteria.</p>
+        <%= link_to "Clear Filters", versions_model_record_path(@trackable_model.name, @record_id), class: "btn btn-outline-secondary" %>
+      </div>
+    <% end %>
+  </div>
+</div>

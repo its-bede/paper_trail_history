@@ -1,8 +1,88 @@
-# Omakase Ruby styling for Rails
-inherit_gem: { rubocop-rails-omakase: rubocop.yml }
+---
+plugins:
+  - rubocop-rails
 
-# Overwrite or add rules to create your own house style
-#
-# # Use `[a, [b, c]]` not `[ a, [ b, c ] ]`
-# Layout/SpaceInsideArrayLiteralBrackets:
-#   Enabled: false
+# Shared config for all projects regarding all cops
+AllCops:
+  DisplayCopNames: true
+  Exclude:
+    - bin/**/*
+    - exe/**/*
+    - vendor/**/*
+    - "**/schema.rb"
+    - "test/dummy/**/*"
+      # Evaluate git config to exclude all ignored files and folders from rubocop checks.
+      # The indentation is to not show the error "Invalid child element in a block sequence" in the editor (by yaml check).
+      # Since this file is pre-processed by ERB, the indentation is not visible in the final file.
+      # See: https://docs.rubocop.org/rubocop/configuration.html#pre-processing
+      <% `git status --ignored --porcelain`.lines.grep(/^!! /).each do |path| %>
+    - <%= path.sub(/^!! /, '').sub(/\/$/, '/**/*') %>
+      <% end %>
+  NewCops: enable
+  UseCache: false
+
+# Shared config for specific cops
+
+# Per team discussion from 14.03.2024 we decided to prefer and enforce the use of 'referrer' over 'referer'
+Rails/RequestReferer:
+  Enabled: true
+  EnforcedStyle: referrer
+
+Rails/UnknownEnv:
+  Enabled: true
+  Environments:
+    - development
+    - test
+    - production
+
+# TrackableModel is not an ActiveRecord model but a wrapper class
+# It returns an Array from .all, not an ActiveRecord relation, so find_each is not available
+Rails/FindEach:
+  Exclude:
+    - app/models/paper_trail_history/version_service.rb
+
+# For better readability we don't want multiline statements for Arrays and HereDoc to count towards the line count
+# https://docs.rubocop.org/rubocop/cops_metrics.html#metricsmodulelength
+Metrics/ModuleLength: &line_count_metrics
+  CountAsOne:
+    - array
+    - hash
+    - heredoc
+  CountComments: false
+
+# https://docs.rubocop.org/rubocop/cops_metrics.html#metricsclasslength
+Metrics/ClassLength:
+  <<: *line_count_metrics
+  Exclude:
+    - app/models/paper_trail_history/version_service.rb
+
+# https://docs.rubocop.org/rubocop/cops_metrics.html#metricsmethodlength
+Metrics/MethodLength:
+  <<: *line_count_metrics
+
+# https://docs.rubocop.org/rubocop/cops_metrics.html#metricsblocklength
+Metrics/BlockLength:
+  <<: *line_count_metrics
+  # Allow large blocks in routes
+  Exclude:
+    - config/**/*.rb
+
+# https://docs.rubocop.org/rubocop/cops_layout.html#layoutlinelength
+Layout/LineLength:
+  # allow lines longer than 120 (by default) characters if they are comment lines
+  # this is mainly for schema comments from annotate gem
+  AllowedPatterns: ['(\A|\s)#']
+  Exclude:
+    - paper_trail_history.gemspec
+
+# https://docs.rubocop.org/rubocop/cops_style.html#styledocumentation
+Style/Documentation:
+  Enabled: true
+  Exclude:
+    # no need to class document migrations
+    - db/migrate/**/*.rb
+    - test/**/*.rb
+
+# https://www.rubydoc.info/gems/rubocop/RuboCop/Cop/Style/ClassAndModuleChildren
+Style/ClassAndModuleChildren:
+  Enabled: false
