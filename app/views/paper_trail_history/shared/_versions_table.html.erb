@@ -43,7 +43,7 @@
             <div class="btn-group btn-group-sm">
               <%= link_to "View", version_path(decorated_version.version.id), class: "btn btn-outline-primary btn-sm" %>
               <% if decorated_version.can_restore? %>
-                <%= link_to "Restore", 
+                <%= button_to "Restore", 
                     restore_version_path(decorated_version.version.id), 
                     method: :patch,
                     data: { 
