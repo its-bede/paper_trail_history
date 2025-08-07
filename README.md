@@ -37,7 +37,7 @@ end
 ## Prerequisites
 
 This engine requires:
-- Rails >= 8.0.2
+- Rails >= 7.2
 - PaperTrail >= 15.0 (configured with `has_paper_trail` in your models)
 
 Make sure you have PaperTrail properly configured in your Rails application before using this engine.
@@ -89,7 +89,24 @@ You can restore any version (except create events) by:
 
 ## Development
 
-### Setting up the Test Environment
+### Quick Start
+
+After cloning the repository, run the setup script to get started:
+
+```bash
+# Automated setup - installs dependencies, sets up database, runs tests
+bin/setup
+```
+
+This script will:
+- Install bundler and project dependencies
+- Set up the test dummy app with database and seed data
+- Run initial tests to verify everything works
+- Run the linter to check code quality
+
+### Manual Setup (Alternative)
+
+If you prefer manual setup:
 
 ```bash
 # Install dependencies
@@ -97,9 +114,9 @@ bundle install
 
 # Set up test database with sample data
 cd test/dummy
-bundle exec rails db:create RAILS_ENV=test
-bundle exec rails db:migrate RAILS_ENV=test
-bundle exec rails db:seed RAILS_ENV=test
+bundle install --gemfile=../../Gemfile
+bundle exec rails db:prepare
+bundle exec rails db:seed
 cd ../..
 ```
 
@@ -140,7 +157,10 @@ bundle exec rake test TEST="test/integration/**/*_test.rb"
 The `test/dummy` directory contains a full Rails application with sample models and data for testing:
 
 ```bash
-# Start the development server
+# Start the development server (from project root)
+bin/dummy
+
+# Alternative: manual approach
 cd test/dummy && bundle exec rails server
 
 # Visit the engine interface
@@ -158,9 +178,9 @@ The dummy app includes:
 For comprehensive compatibility testing, use the provided Gemfiles:
 
 ```bash
-# Test against Rails 7.1
-BUNDLE_GEMFILE=gemfiles/rails_7.1.gemfile bundle install
-BUNDLE_GEMFILE=gemfiles/rails_7.1.gemfile bundle exec rake test
+# Test against Rails 7.2
+BUNDLE_GEMFILE=gemfiles/rails_7.2.gemfile bundle install
+BUNDLE_GEMFILE=gemfiles/rails_7.2.gemfile bundle exec rake test
 
 # Test against Rails 8.0
 BUNDLE_GEMFILE=gemfiles/rails_8.0.gemfile bundle install  
@@ -186,3 +206,7 @@ The project uses GitHub Actions to test against multiple Ruby and Rails versions
 ## License
 
 The gem is available as open source under the terms of the [MIT License](https://opensource.org/licenses/MIT).
+
+---
+
+Kindly supported by [aifinyo AG](https://aifinyo.de)
