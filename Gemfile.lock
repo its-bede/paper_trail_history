@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    paper_trail_history (0.1.1)
+    paper_trail_history (0.1.2)
       paper_trail (>= 15.0)
       rails (>= 7.2)
 
