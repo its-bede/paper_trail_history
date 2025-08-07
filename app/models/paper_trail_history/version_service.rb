@@ -57,9 +57,10 @@ module PaperTrailHistory
     end
 
     def self.find_version_across_tables(version_id)
-      # Try to find the version in all possible version classes
+      # Try to find the version in all possible version classes, using unscoped to bypass any default scope
+      # and/or soft delete mechanism like acts_as_paranoid
       all_version_classes.each do |version_class|
-        version = version_class.find_by(id: version_id)
+        version = version_class.unscoped.find_by(id: version_id)
         return version if version
       end
       nil

@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.2] - 2025-08-07
+
+### Fixed
+- **acts_as_paranoid Compatibility**: Fixed `find_version_across_tables` method to work with soft-deleted version records by using `unscoped` to bypass default scopes including acts_as_paranoid
+
 ## [0.1.1] - 2025-08-06
 
 ### Fixed
@@ -87,6 +92,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Bootstrap**: 5.3.0 (loaded via CDN)
 - **Bootstrap Icons**: 1.10.0 (loaded via CDN)
 
-[Unreleased]: https://github.com/your-org/paper_trail_history/compare/v0.1.1...HEAD
+[Unreleased]: https://github.com/your-org/paper_trail_history/compare/v0.1.2...HEAD
+[0.1.2]: https://github.com/your-org/paper_trail_history/compare/v0.1.1...v0.1.2
 [0.1.1]: https://github.com/your-org/paper_trail_history/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/your-org/paper_trail_history/releases/tag/v0.1.0
