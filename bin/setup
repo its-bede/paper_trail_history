@@ -1,0 +1,42 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+require 'fileutils'
+
+# path to your application root.
+APP_ROOT = File.expand_path('..', __dir__)
+
+def system!(*args)
+  system(*args) || abort("\n== Command #{args} failed ==")
+end
+
+FileUtils.chdir APP_ROOT do
+  # This script is a way to set up or update your development environment automatically.
+  # This script is idempotent, so that you can run it at any time and get an expectable outcome.
+  # Add necessary setup steps to this file.
+
+  puts '== Installing dependencies =='
+  system! 'gem install bundler --conservative'
+  system('bundle check') || system!('bundle install')
+
+  puts "\n== Setting up test dummy app =="
+  FileUtils.chdir 'test/dummy' do
+    system! 'bundle install --gemfile=../../Gemfile'
+    system! 'bundle exec rails db:prepare'
+    system! 'bundle exec rails db:seed'
+  end
+
+  puts "\n== Running initial tests =="
+  system! 'bundle exec rake test'
+
+  puts "\n== Running linter =="
+  system! 'bundle exec rubocop'
+
+  puts "\n== Setup complete! =="
+  puts "\nNext steps:"
+  puts "  - Run tests: bundle exec rake test"
+  puts "  - Start dummy app server: cd test/dummy && bundle exec rails server"
+  puts "  - Open Rails console: cd test/dummy && bundle exec rails console"
+  puts "  - Run linter: bundle exec rubocop"
+  puts "  - Build gem: bundle exec rake build"
+end

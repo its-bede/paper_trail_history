@@ -1,0 +1,21 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+require 'fileutils'
+
+# path to your application root.
+APP_ROOT = File.expand_path('..', __dir__)
+DUMMY_APP_ROOT = File.join(APP_ROOT, 'test', 'dummy')
+
+def system!(*args)
+  system(*args) || abort("\n== Command #{args} failed ==")
+end
+
+puts "== Starting dummy Rails server =="
+puts "App will be available at: http://localhost:3000"
+puts "Paper Trail History interface: http://localhost:3000/paper_trail_history"
+puts ""
+
+FileUtils.chdir DUMMY_APP_ROOT do
+  system! 'bundle exec rails server'
+end
