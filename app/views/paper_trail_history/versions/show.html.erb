@@ -10,7 +10,7 @@
   <h1>Version Details</h1>
   <div>
     <% if @decorated_version.can_restore? %>
-      <%= link_to "Restore This Version", 
+      <%= button_to "Restore This Version", 
           restore_version_path(@version), 
           method: :patch,
           data: { 
@@ -68,7 +68,7 @@
             This will restore the record to the state it was in at this version.
             <strong>This action cannot be undone</strong>, but will create a new version entry.
           </p>
-          <%= link_to "Restore This Version", 
+          <%= button_to "Restore This Version", 
               restore_version_path(@version), 
               method: :patch,
               data: { 
