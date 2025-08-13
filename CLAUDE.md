@@ -95,3 +95,4 @@ The engine includes internationalization support:
 
 ## Version Update Process
 - When updating the version: run bundle install, update changelog
+- when bumping the version also update the changelog with the latest changes
