@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.0] - 2025-12-04
+
+### Changed
+- **BREAKING**: Minimum Ruby version increased to 3.3.0
+- **BREAKING**: Minimum Rails version increased to 8.0
+- **CI Expansion**: Extended CI test matrix to include Ruby 3.4 and Rails 8.1
+- **CI**: Dropped Ruby 3.1, 3.2 and Rails 7.2 from test matrix
+- **Rails Compatibility**: Updated `redirect_back` to `redirect_back_or_to` for Rails 7+ recommended method
+
+### Added
+- **Rails 8.1 Support**: Added `gemfiles/rails_8.1.gemfile` for Rails 8.1 testing
+
+### Fixed
+- **Test Suite**: Fixed navigation test to check for `.container-fluid` class instead of `.container`
+
+### Removed
+- **Rails 7.2 Support**: Removed `gemfiles/rails_7.2.gemfile`
+
 ## [0.1.3] - 2025-08-13
 
 ### Changed
@@ -97,7 +115,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Bootstrap**: 5.3.0 (loaded via CDN)
 - **Bootstrap Icons**: 1.10.0 (loaded via CDN)
 
-[Unreleased]: https://github.com/your-org/paper_trail_history/compare/v0.1.3...HEAD
+[Unreleased]: https://github.com/your-org/paper_trail_history/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/your-org/paper_trail_history/compare/v0.1.3...v0.2.0
 [0.1.3]: https://github.com/your-org/paper_trail_history/compare/v0.1.2...v0.1.3
 [0.1.2]: https://github.com/your-org/paper_trail_history/compare/v0.1.1...v0.1.2
 [0.1.1]: https://github.com/your-org/paper_trail_history/compare/v0.1.0...v0.1.1
