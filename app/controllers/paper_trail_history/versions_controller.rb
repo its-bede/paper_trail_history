@@ -14,11 +14,10 @@ module PaperTrailHistory
       result = VersionService.restore_version(@version.id)
 
       if result[:success]
-        redirect_back fallback_location: version_path(@version),
-                      notice: result[:message]
+        redirect_back_or_to(version_path(@version), notice: result[:message])
       else
-        redirect_back fallback_location: version_path(@version),
-                      alert: t('paper_trail_history.errors.restore_failed', error: result[:error])
+        redirect_back_or_to(version_path(@version),
+                            alert: t('paper_trail_history.errors.restore_failed', error: result[:error]))
       end
     end
 

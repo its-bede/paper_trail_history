@@ -31,7 +31,7 @@ module PaperTrailHistory
       # Flash messages are tested differently in integration tests
       # We would need a controller action that sets flash to test this properly
       # For now, just verify the page structure can handle flash messages
-      assert_select '.container'
+      assert_select '.container-fluid'
     end
 
     test 'layout includes bootstrap styling' do
