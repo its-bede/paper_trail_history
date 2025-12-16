@@ -66,6 +66,35 @@ module PaperTrailHistory
       assert_includes result[:error], 'Cannot restore create events'
     end
 
+    test 'find_version with model_name uses specific version class' do
+      version = create_test_version
+      found = VersionService.find_version(version.id, 'User')
+
+      assert_not_nil found
+      assert_equal version.id, found.id
+    end
+
+    test 'find_version without model_name searches across tables' do
+      version = create_test_version
+      found = VersionService.find_version(version.id)
+
+      assert_not_nil found
+      assert_equal version.id, found.id
+    end
+
+    test 'find_version with invalid model_name returns nil' do
+      version = create_test_version
+      found = VersionService.find_version(version.id, 'NonExistentModel')
+
+      assert_nil found
+    end
+
+    test 'find_version with nil version_id returns nil' do
+      found = VersionService.find_version(99_999, 'User')
+
+      assert_nil found
+    end
+
     private
 
     def create_test_version(attributes = {})

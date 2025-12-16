@@ -10,11 +10,11 @@
   <h1>Version Details</h1>
   <div>
     <% if @decorated_version.can_restore? %>
-      <%= button_to "Restore This Version", 
-          restore_version_path(@version), 
+      <%= button_to "Restore This Version",
+          restore_version_link_path(@version),
           method: :patch,
-          data: { 
-            confirm: "Are you sure you want to restore this version? This will overwrite the current data." 
+          data: {
+            confirm: "Are you sure you want to restore this version? This will overwrite the current data."
           },
           class: "btn btn-warning" %>
     <% end %>
@@ -68,11 +68,11 @@
             This will restore the record to the state it was in at this version.
             <strong>This action cannot be undone</strong>, but will create a new version entry.
           </p>
-          <%= button_to "Restore This Version", 
-              restore_version_path(@version), 
+          <%= button_to "Restore This Version",
+              restore_version_link_path(@version),
               method: :patch,
-              data: { 
-                confirm: "Are you sure you want to restore this version? This will overwrite the current data and cannot be undone." 
+              data: {
+                confirm: "Are you sure you want to restore this version? This will overwrite the current data and cannot be undone."
               },
               class: "btn btn-warning" %>
         </div>
