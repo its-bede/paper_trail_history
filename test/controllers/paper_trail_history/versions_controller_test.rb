@@ -21,6 +21,10 @@ module PaperTrailHistory
         'Users'
       end
 
+      def mock_model.version_class
+        PaperTrail::Version
+      end
+
       TrackableModel.stub :find, mock_model do
         get version_url(@version)
         assert_response :success
@@ -40,7 +44,7 @@ module PaperTrailHistory
 
       VersionService.stub :restore_version, result do
         patch restore_version_url(@version)
-        assert_redirected_to version_path(@version)
+        assert_redirected_to version_path(@version, model_name: @version.item_type)
         follow_redirect!
         assert_select '.alert-success'
       end
@@ -51,10 +55,55 @@ module PaperTrailHistory
 
       VersionService.stub :restore_version, result do
         patch restore_version_url(@version)
-        assert_redirected_to version_path(@version)
+        assert_redirected_to version_path(@version, model_name: @version.item_type)
         follow_redirect!
         assert_select '.alert-danger'
       end
+    end
+
+    test 'should get show with model_name parameter' do
+      mock_model = Object.new
+      def mock_model.name
+        'User'
+      end
+
+      def mock_model.human_name
+        'Users'
+      end
+
+      def mock_model.version_class
+        PaperTrail::Version
+      end
+
+      TrackableModel.stub :find, mock_model do
+        get version_url(@version, model_name: 'User')
+        assert_response :success
+        assert_select 'h1', 'Version Details'
+      end
+    end
+
+    test 'should get show without model_name parameter (backwards compatibility)' do
+      mock_model = Object.new
+      def mock_model.name
+        'User'
+      end
+
+      def mock_model.human_name
+        'Users'
+      end
+
+      TrackableModel.stub :find, mock_model do
+        get version_url(@version)
+        assert_response :success
+        assert_select 'h1', 'Version Details'
+      end
+    end
+
+    test 'redirects for version with invalid model_name' do
+      get version_url(@version, model_name: 'NonExistentModel')
+      assert_redirected_to root_path
+      follow_redirect!
+      assert_select '.alert-danger'
     end
 
     private

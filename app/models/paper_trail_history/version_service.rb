@@ -19,6 +19,19 @@ module PaperTrailHistory
       apply_record_filters(versions, params).order(created_at: :desc)
     end
 
+    def self.find_version(version_id, model_name = nil)
+      if model_name.present?
+        # Direct query when model_name is known (fast)
+        trackable_model = TrackableModel.find(model_name)
+        return nil unless trackable_model
+
+        trackable_model.version_class.unscoped.find_by(id: version_id)
+      else
+        # Fall back to searching across all tables (backwards compatible)
+        find_version_across_tables(version_id)
+      end
+    end
+
     def self.restore_version(version_id)
       version = find_version_across_tables(version_id)
       return validate_version_for_restore(version) unless version_restorable?(version)

@@ -14,9 +14,9 @@ module PaperTrailHistory
       result = VersionService.restore_version(@version.id)
 
       if result[:success]
-        redirect_back_or_to(version_path(@version), notice: result[:message])
+        redirect_back_or_to(version_path(@version, model_name: @version.item_type), notice: result[:message])
       else
-        redirect_back_or_to(version_path(@version),
+        redirect_back_or_to(version_path(@version, model_name: @version.item_type),
                             alert: t('paper_trail_history.errors.restore_failed', error: result[:error]))
       end
     end
@@ -24,8 +24,10 @@ module PaperTrailHistory
     private
 
     def find_version
-      @version = PaperTrail::Version.find(params[:id])
-    rescue ActiveRecord::RecordNotFound
+      @version = VersionService.find_version(params[:id], params[:model_name])
+
+      return if @version
+
       redirect_to root_path, alert: t('paper_trail_history.errors.version_not_found')
     end
   end

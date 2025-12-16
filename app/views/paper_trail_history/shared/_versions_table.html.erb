@@ -16,8 +16,8 @@
       <% versions.each do |decorated_version| %>
         <tr>
           <td>
-            <%= link_to "##{decorated_version.version.id}", 
-                version_path(decorated_version.version.id), 
+            <%= link_to "##{decorated_version.version.id}",
+                version_link_path(decorated_version.version),
                 class: "text-decoration-none" %>
           </td>
           <td>
@@ -41,13 +41,13 @@
           <% end %>
           <td>
             <div class="btn-group btn-group-sm">
-              <%= link_to "View", version_path(decorated_version.version.id), class: "btn btn-outline-primary btn-sm" %>
+              <%= link_to "View", version_link_path(decorated_version.version), class: "btn btn-outline-primary btn-sm" %>
               <% if decorated_version.can_restore? %>
-                <%= button_to "Restore", 
-                    restore_version_path(decorated_version.version.id), 
+                <%= button_to "Restore",
+                    restore_version_link_path(decorated_version.version),
                     method: :patch,
-                    data: { 
-                      confirm: "Are you sure you want to restore this version?" 
+                    data: {
+                      confirm: "Are you sure you want to restore this version?"
                     },
                     class: "btn btn-outline-warning btn-sm" %>
               <% end %>
