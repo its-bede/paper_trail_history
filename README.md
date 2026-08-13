@@ -128,6 +128,28 @@ add_column :versions, :item_subtype, :string
 add_index  :versions, %i[item_type item_subtype]
 ```
 
+### Version counts on the model list
+
+The model list does **not** show a version count per model, because building that
+column costs one `COUNT` query per version table and a count reads the whole
+table. An application that gives each model its own version table therefore pays
+one full table read per model, on its landing page. With ~120 models and tables
+in the millions of rows, that is the difference between an instant page and a
+page that takes tens of seconds.
+
+Each model's own page always shows its count - that is a single query.
+
+If your installation is small enough not to care, turn the column on:
+
+```ruby
+config.show_version_counts = true
+```
+
+> [!TIP]
+> No index makes this faster. When a model has its own version table every row
+> shares the same `item_type`, so an index on it cannot narrow the scan —
+> counting is inherently proportional to the number of rows.
+
 ### Page size
 
 Version tables grow without bound, so the engine reads one page at a time rather

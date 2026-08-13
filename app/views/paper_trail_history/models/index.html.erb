@@ -13,7 +13,9 @@
               <th><i class="bi bi-database-fill"></i> <%= t('.model') %></th>
               <th><%= t('.table_name') %></th>
               <th><%= t('.version_table') %></th>
-              <th><%= t('.total_versions') %></th>
+              <% if @show_counts %>
+                <th><%= t('.total_versions') %></th>
+              <% end %>
               <th><%= t('.actions') %></th>
             </tr>
           </thead>
@@ -33,9 +35,11 @@
                   <br>
                   <small class="text-muted"><%= model.version_class.name %></small>
                 </td>
-                <td>
-                  <span class="badge bg-primary"><%= model.total_versions_count %></span>
-                </td>
+                <% if @show_counts %>
+                  <td>
+                    <span class="badge bg-primary"><%= model.total_versions_count %></span>
+                  </td>
+                <% end %>
                 <td>
                   <div class="btn-group btn-group-sm" role="group">
                     <%= link_to model_path(model.name), 

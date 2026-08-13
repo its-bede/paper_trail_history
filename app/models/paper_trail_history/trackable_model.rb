@@ -108,31 +108,51 @@ module PaperTrailHistory
       end
     end
 
+    # Counts the versions of a version table with one query.
+    #
+    # The query also groups by item_subtype when the table has that column, thus
+    # a subclass of a single table inheritance does not need its own query. One
+    # query for each version table is the whole cost.
+    #
     # @api private
     # @param version_class [Class] a PaperTrail version class
     # @param models_for_class [Array<TrackableModel>]
-    # @return [Hash{String => Integer}] count for each item type
+    # @return [Hash] count for each item type, or for each pair of item type and
+    #   item subtype
     def self.fetch_version_counts(version_class, models_for_class)
       item_types = models_for_class.map(&:item_type_for_versions)
-      version_class.where(item_type: item_types).group(:item_type).count
+      scope = version_class.where(item_type: item_types)
+      return scope.group(:item_type).count unless version_class.column_names.include?('item_subtype')
+
+      scope.group(:item_type, :item_subtype).count
     end
 
-    # The grouped count uses item_type, thus it cannot separate the subclasses of
-    # a single table inheritance. A subclass counts its own versions.
-    #
     # @api private
     # @param models_for_class [Array<TrackableModel>]
-    # @param counts [Hash{String => Integer}]
+    # @param counts [Hash]
     # @param count_cache [Hash{String => Integer}] gets the counts
     # @return [void]
     def self.cache_counts_for_models(models_for_class, counts, count_cache)
       models_for_class.each do |model|
-        count_cache[model.name] = if model.sti_subclass?
-                                    model.versions.count
-                                  else
-                                    counts[model.item_type_for_versions] || 0
-                                  end
+        count_cache[model.name] = count_for(model, counts)
       end
+    end
+
+    # Reads the count of one model out of the grouped result.
+    #
+    # A subclass counts only the rows of its own subtype. A base class counts all
+    # of its rows, thus the rows of its subclasses belong to it. This is the same
+    # rule that ActiveRecord uses for a query on the base class.
+    #
+    # @api private
+    # @param model [TrackableModel]
+    # @param counts [Hash]
+    # @return [Integer]
+    def self.count_for(model, counts)
+      return counts[model.item_type_for_versions].to_i unless counts.keys.first.is_a?(Array)
+      return counts.fetch([model.item_type_for_versions, model.name], 0) if model.sti_subclass?
+
+      counts.sum { |(item_type, _subtype), count| item_type == model.item_type_for_versions ? count : 0 }
     end
 
     # @api private

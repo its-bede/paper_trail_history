@@ -13,6 +13,28 @@ The text uses ASD-STE100 Simplified Technical English.
 All tasks of this review are done, except two that wait for a decision of the
 maintainer: the division of `VersionService` (Q1) and `Gemfile.lock` in Git (Q7).
 
+### P8 - Make the model list fast for many version tables - **High** - DONE (0.3.0)
+
+`app/controllers/paper_trail_history/models_controller.rb`, `app/models/paper_trail_history/trackable_model.rb`
+
+Came from a report of a production user: about 120 models, each with its own
+version class and table, 10 to 15 of them with single table inheritance, and up
+to 6 million rows in one version table. The root page of the engine needed a long
+time.
+
+The cause is the count column. The engine needs one `COUNT` for each version
+table, and a count reads the whole table. Thus the page did about 120 full table
+reads, one after the other. Version 0.3.0 made it worse: task R4 gave each STI
+subclass its own count query, which added 10 to 15 more.
+
+- [x] Show no count in the model list. `config.show_version_counts` gives the column back.
+- [x] Group the count by `item_type` and `item_subtype`, thus a subclass needs no own query.
+- [x] Write the reason in the README.
+
+An index does not help here. When each model has its own version table, all rows
+of that table have the same `item_type`, thus an index on this column cannot make
+the read smaller.
+
 ---
 
 ## 1. Security

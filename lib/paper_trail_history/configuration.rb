@@ -65,6 +65,20 @@ module PaperTrailHistory
     # @return [Hash{Symbol => Hash}]
     attr_accessor :assets
 
+    # Shows the number of versions of each model in the model list.
+    #
+    # The engine needs one count query for each version table to build this
+    # column, and a count reads the whole table. An application with a version
+    # table for each model thus pays one full read for each model on its root
+    # page. For 120 models with millions of rows this takes a long time, and the
+    # column is only information.
+    #
+    # The page of a single model always shows its count. Only the list is
+    # without counts.
+    #
+    # @return [Boolean]
+    attr_accessor :show_version_counts
+
     # Number of versions that the engine shows on one page.
     #
     # A version table of a production application can hold millions of rows.
@@ -116,6 +130,7 @@ module PaperTrailHistory
       @parameter_filter = nil
       @page_limit = DEFAULT_PAGE_LIMIT
       @assets = DEFAULT_ASSETS
+      @show_version_counts = false
     end
 
     # Attribute names whose values the engine must not show.

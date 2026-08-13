@@ -4,7 +4,8 @@ module PaperTrailHistory
   # Controller for managing trackable model operations and displaying version histories
   class ModelsController < ApplicationController
     def index
-      @trackable_models = TrackableModel.all_with_counts
+      @show_counts = PaperTrailHistory.config.show_version_counts
+      @trackable_models = @show_counts ? TrackableModel.all_with_counts : TrackableModel.all
     end
 
     def show
