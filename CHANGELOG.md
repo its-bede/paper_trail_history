@@ -18,6 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Security documentation**: New README section covering the threat model, both configuration styles and route-level protection
 
 ### Fixed
+- **Restoring was broken on Rails 7.1+ defaults**: PaperTrail stores the previous state of a record as YAML, and Rails permits only a small set of classes in a YAML column - not including `ActiveSupport::TimeWithZone`. Reifying any model with `created_at`/`updated_at` therefore failed with a raw `Tried to load unspecified class` error. The engine now reports which Rails setting to change, and the README documents the required `yaml_column_permitted_classes` configuration. Browsing history was never affected, only restoring.
 - **Restore could modify the wrong record**: `VersionService.restore_version` now accepts the version record itself instead of only an ID. In applications with more than one version table (PaperTrail's `versions` plus a custom class such as `ProductVersion`), the same ID can exist in each table. The controller resolved the version correctly using `model_name` and then discarded it, so the restore searched by ID again and could act on a completely different record. Passing an ID still works for backwards compatibility, but is ambiguous in multi-table setups.
 
 ### Changed

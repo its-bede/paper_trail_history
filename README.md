@@ -109,6 +109,30 @@ This engine requires:
 
 Make sure you have PaperTrail properly configured in your Rails application before using this engine.
 
+### YAML deserialization (required for restoring)
+
+PaperTrail stores the previous state of a record as YAML. Since Rails 7.1, Rails
+loads only an explicitly permitted set of classes out of a YAML column, and that
+set does **not** include `ActiveSupport::TimeWithZone`. Every model with
+`created_at`/`updated_at` therefore fails to reify, and restoring dies with:
+
+```
+Tried to load unspecified class: ActiveSupport::TimeWithZone
+```
+
+Browsing history is unaffected - only restoring breaks. Permit the types your
+models actually store, in `config/application.rb`:
+
+```ruby
+config.active_record.yaml_column_permitted_classes = [
+  Symbol, Date, Time, ActiveSupport::TimeWithZone, ActiveSupport::TimeZone, BigDecimal
+]
+```
+
+Add any other class your models serialize (for example `ActiveSupport::HashWithIndifferentAccess`).
+If a class is missing, the engine reports which setting to change instead of
+showing the raw Psych error.
+
 ## Usage
 
 After mounting the engine, navigate to `/revisions` (or whatever path you chose) in your browser to access the interface.

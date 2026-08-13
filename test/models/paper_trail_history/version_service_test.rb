@@ -95,6 +95,30 @@ module PaperTrailHistory
       assert_nil found
     end
 
+    test 'restores a record that has timestamps to the values of the previous version' do
+      user = changed_user
+
+      VersionService.restore_version(user.versions.last)
+
+      assert_equal 'Original', user.reload.name
+    end
+
+    test 'refuses the restore when Rails does not permit a class of the stored version' do
+      user = changed_user
+
+      result = without_permitted_yaml_classes { VersionService.restore_version(user.versions.last) }
+
+      assert_not result[:success]
+    end
+
+    test 'names the Rails setting when Rails does not permit a class of the stored version' do
+      user = changed_user
+
+      result = without_permitted_yaml_classes { VersionService.restore_version(user.versions.last) }
+
+      assert_includes result[:error], 'yaml_column_permitted_classes'
+    end
+
     test 'restores the given version and not another version with the same id' do
       product_version = colliding_product_version
 
@@ -112,6 +136,24 @@ module PaperTrailHistory
     end
 
     private
+
+    # Makes a user with an update version. The user has timestamps, thus the
+    # stored YAML holds an ActiveSupport::TimeWithZone value.
+    def changed_user
+      user = User.create!(name: 'Original', email: "r9-#{SecureRandom.hex(4)}@example.com")
+      user.update!(name: 'Changed')
+      user
+    end
+
+    # Runs the block with the YAML rules of a Rails application that permits no
+    # class. This is the default of a new Rails application.
+    def without_permitted_yaml_classes
+      original = ActiveRecord.yaml_column_permitted_classes
+      ActiveRecord.yaml_column_permitted_classes = []
+      yield
+    ensure
+      ActiveRecord.yaml_column_permitted_classes = original
+    end
 
     # Makes an update version of a product, and a create version of a user that
     # has the same ID in the other version table. A restore that searches by ID

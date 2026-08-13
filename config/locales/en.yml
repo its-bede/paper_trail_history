@@ -7,6 +7,7 @@ en:
       model_not_found: "Model '%{model_name}' not found or not trackable"
       restore_failed: "Failed to restore: %{error}"
       cannot_restore_create: "Cannot restore create events"
+      yaml_class_not_permitted: "Cannot read the stored version (%{message}). Rails loads only permitted classes from a YAML column. Add the missing class to config.active_record.yaml_column_permitted_classes in your application configuration."
     messages:
       restore_from_deletion: "Record restored from deletion"
       restore_to_previous: "Record restored to previous version"

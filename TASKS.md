@@ -9,7 +9,7 @@ The text uses ASD-STE100 Simplified Technical English.
 > and RuboCop found no offense. Thus no finding in this list comes from a test
 > that fails now.
 
-**Highest priority:** S1 (done), R1 (done), R9, P1, S2.
+**Highest priority:** S1 (done), R1 (done), R9 (done), P1, S2.
 
 ---
 
@@ -166,7 +166,7 @@ memory. It does not show the new values.
 
 - [ ] Reload the item, or give back the object from `reify`.
 
-### R9 - Make the restore work with the YAML rules of Rails - **High**
+### R9 - Make the restore work with the YAML rules of Rails - **High** - DONE (0.3.0)
 
 `README.md`, `app/models/paper_trail_history/version_service.rb:35`
 
@@ -185,9 +185,9 @@ restore. See T1.
 The dummy application now sets `yaml_column_permitted_classes` (commit for R1).
 The gem must also help the user of the gem:
 
-- [ ] Write the necessary `config.active_record.yaml_column_permitted_classes` in the README.
-- [ ] Catch `Psych::DisallowedClass` and give a message that tells the user what to configure.
-- [ ] Add a test with a real restore of a model that has timestamps.
+- [x] Write the necessary `config.active_record.yaml_column_permitted_classes` in the README.
+- [x] Catch `Psych::DisallowedClass` and give a message that tells the user what to configure.
+- [x] Add a test with a real restore of a model that has timestamps.
 
 ---
 

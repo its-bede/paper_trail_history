@@ -7,6 +7,7 @@ de:
       model_not_found: "Modell '%{model_name}' nicht gefunden oder nicht verfolgbar"
       restore_failed: "Wiederherstellung fehlgeschlagen: %{error}"
       cannot_restore_create: "Erstell-Ereignisse können nicht wiederhergestellt werden"
+      yaml_class_not_permitted: "Die gespeicherte Version kann nicht gelesen werden (%{message}). Rails lädt nur erlaubte Klassen aus einer YAML-Spalte. Fügen Sie die fehlende Klasse zu config.active_record.yaml_column_permitted_classes in Ihrer Anwendungskonfiguration hinzu."
     messages:
       restore_from_deletion: "Datensatz aus Löschung wiederhergestellt"
       restore_to_previous: "Datensatz auf vorherige Version wiederhergestellt"

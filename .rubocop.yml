@@ -55,6 +55,9 @@ Metrics/ClassLength:
   <<: *line_count_metrics
   Exclude:
     - app/models/paper_trail_history/version_service.rb
+    # A test class is a flat list of independent cases, not a unit of logic.
+    # Splitting it by line count would group tests by accident instead of by topic.
+    - test/**/*.rb
 
 # https://docs.rubocop.org/rubocop/cops_metrics.html#metricsmethodlength
 Metrics/MethodLength:

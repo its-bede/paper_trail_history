@@ -39,6 +39,12 @@ module PaperTrailHistory
     # +versions+ plus a custom class such as +ProductVersion+) can hold the same
     # ID in each table, and a search by ID finds whichever table comes first.
     #
+    # PaperTrail keeps the previous state of a record as YAML. Rails loads only
+    # permitted classes from a YAML column, thus the host application has to list
+    # the types that its models use in
+    # +config.active_record.yaml_column_permitted_classes+. If a class is
+    # missing, this method gives back an error that names the setting.
+    #
     # @param version [ActiveRecord::Base, Integer, String] the version record, or
     #   its ID for backwards compatibility
     # @return [Hash] +:success+, and either +:item+ and +:message+ or +:error+
@@ -47,6 +53,11 @@ module PaperTrailHistory
       return validate_version_for_restore(version) unless version_restorable?(version)
 
       perform_version_restore(version)
+    rescue Psych::DisallowedClass => e
+      {
+        success: false,
+        error: I18n.t('paper_trail_history.errors.yaml_class_not_permitted', message: e.message)
+      }
     rescue StandardError => e
       { success: false, error: e.message }
     end
