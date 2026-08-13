@@ -58,6 +58,31 @@ module PaperTrailHistory
       assert_not PaperTrailHistory.config.enforce_access_control?
     end
 
+    test 'uses the filter list of the host application by default' do
+      assert_equal Rails.application.config.filter_parameters, PaperTrailHistory.config.filter_attributes
+    end
+
+    test 'finds an attribute that the host application filters' do
+      assert PaperTrailHistory.config.filtered_attribute?('email')
+    end
+
+    test 'does not find an attribute that the host application does not filter' do
+      assert_not PaperTrailHistory.config.filtered_attribute?('name')
+    end
+
+    test 'uses the filter list that the host application sets' do
+      PaperTrailHistory.configure { |config| config.filter_attributes = [:secret_code] }
+
+      assert PaperTrailHistory.config.filtered_attribute?('secret_code')
+    end
+
+    test 'forgets the old filter list when the host application sets a new one' do
+      PaperTrailHistory.config.filtered_attribute?('email')
+      PaperTrailHistory.configure { |config| config.filter_attributes = [:secret_code] }
+
+      assert_not PaperTrailHistory.config.filtered_attribute?('email')
+    end
+
     test 'reset_config! gives back the default configuration' do
       PaperTrailHistory.configure { |config| config.allow_unauthenticated_access = true }
       PaperTrailHistory.reset_config!

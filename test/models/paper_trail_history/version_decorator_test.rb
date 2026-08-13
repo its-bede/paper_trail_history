@@ -111,6 +111,25 @@ module PaperTrailHistory
       end
     end
 
+    test 'hides the old value of an attribute that the host application filters' do
+      change = filtered_change
+
+      assert_equal I18n.t('paper_trail_history.display.filtered'), change[:old_value]
+    end
+
+    test 'hides the new value of an attribute that the host application filters' do
+      change = filtered_change
+
+      assert_equal I18n.t('paper_trail_history.display.filtered'), change[:new_value]
+    end
+
+    test 'shows the value of an attribute that the host application does not filter' do
+      version = create_test_version(object_changes: { name: %w[old_name new_name] }.to_yaml)
+      change = VersionDecorator.new(version).changed_attributes.first
+
+      assert_equal 'new_name', change[:new_value]
+    end
+
     test 'returns item display name' do
       display_name = @decorator.item_display_name
       assert_kind_of String, display_name
@@ -118,6 +137,16 @@ module PaperTrailHistory
     end
 
     private
+
+    # The dummy application filters :email, thus the decorator must not show the
+    # two address values of this change.
+    def filtered_change
+      version = create_test_version(
+        object_changes: { email: %w[old@example.com new@example.com] }.to_yaml
+      )
+
+      VersionDecorator.new(version).changed_attributes.first
+    end
 
     def create_test_version(attributes = {})
       PaperTrail::Version.create!(

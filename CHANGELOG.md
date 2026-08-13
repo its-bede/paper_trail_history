@@ -13,7 +13,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **BREAKING**: The engine now refuses requests with `403 Forbidden` when the host application has not configured access control. Previously, mounting the engine exposed the complete audit trail and the record-restoring `restore` endpoint to anyone who knew the mount path, because `PaperTrailHistory::ApplicationController` inherits from `ActionController::Base` and therefore never ran the host application's `before_action` filters. Development and test environments remain open and log a warning instead, so the dummy app and existing test suites keep working.
 
 ### Added
-- **Configuration API**: `PaperTrailHistory.configure` with `parent_controller`, `authenticate_with`, `authorize_restore_with` and `allow_unauthenticated_access`
+- **Configuration API**: `PaperTrailHistory.configure` with `parent_controller`, `authenticate_with`, `authorize_restore_with`, `allow_unauthenticated_access` and `filter_attributes`
+- **Attribute redaction**: the record page and the version diff previously printed every attribute verbatim, including password digests, API tokens and their historical values. Values are now redacted using `Rails.application.config.filter_parameters` by default, and `config.filter_attributes` extends the list. Matching is delegated to `ActiveSupport::ParameterFilter`, so symbols, strings, regular expressions and procs all behave as they do in Rails log filtering
 - **Separate restore authorization**: `authorize_restore_with` gates the destructive `restore` action independently from read access, so teams can grant read-only history access
 - **Security documentation**: New README section covering the threat model, both configuration styles and route-level protection
 

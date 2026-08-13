@@ -61,6 +61,51 @@ module PaperTrailHistory
       @authenticate_with = nil
       @authorize_restore_with = nil
       @allow_unauthenticated_access = false
+      @filter_attributes = nil
+      @parameter_filter = nil
+    end
+
+    # Attribute names whose values the engine must not show.
+    #
+    # The default is the list of the host application,
+    # +Rails.application.config.filter_parameters+. Thus each attribute that
+    # Rails keeps out of the log files also stays out of this interface. The
+    # list accepts everything that +ActiveSupport::ParameterFilter+ accepts:
+    # symbols, strings, regular expressions and procs.
+    #
+    # The engine reads the list of the host application one time. Change the
+    # list in an initializer.
+    #
+    # @example Filter more attributes
+    #   config.filter_attributes += [:internal_note, /_secret\z/]
+    #
+    # @return [Array]
+    def filter_attributes
+      @filter_attributes ||= Rails.application.config.filter_parameters
+    end
+
+    # Sets the attribute names whose values the engine must not show.
+    #
+    # @param value [Array]
+    # @return [Array]
+    def filter_attributes=(value)
+      @parameter_filter = nil
+      @filter_attributes = value
+    end
+
+    # Tells if the engine must hide the value of the given attribute.
+    #
+    # The method asks +ActiveSupport::ParameterFilter+ with a probe object. Thus
+    # the engine hides exactly the attributes that Rails hides, also for a
+    # regular expression or a proc in the list.
+    #
+    # @param name [String, Symbol] name of the attribute
+    # @return [Boolean]
+    def filtered_attribute?(name)
+      probe = Object.new
+      key = name.to_s
+
+      !parameter_filter.filter(key => probe)[key].equal?(probe)
     end
 
     # Tells if the host application granted access to the engine.
@@ -101,6 +146,10 @@ module PaperTrailHistory
     end
 
     private
+
+    def parameter_filter
+      @parameter_filter ||= ActiveSupport::ParameterFilter.new(filter_attributes)
+    end
 
     def custom_parent_controller?
       parent_controller.to_s != DEFAULT_PARENT_CONTROLLER

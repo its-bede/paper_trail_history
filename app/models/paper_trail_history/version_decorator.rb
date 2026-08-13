@@ -61,11 +61,7 @@ module PaperTrailHistory
       return [] unless changeset
 
       changeset.map do |attr, (old_val, new_val)|
-        {
-          attribute: attr,
-          old_value: format_value(old_val),
-          new_value: format_value(new_val)
-        }
+        build_change(attr, old_val, new_val)
       end
     end
 
@@ -82,6 +78,22 @@ module PaperTrailHistory
     end
 
     private
+
+    # Hides both values of an attribute that the host application filters. A
+    # diff shows the old value and the new value, thus showing either of them
+    # would expose the secret that the filter must protect.
+    def build_change(attr, old_val, new_val)
+      if PaperTrailHistory.config.filtered_attribute?(attr)
+        filtered = I18n.t('paper_trail_history.display.filtered')
+        return { attribute: attr, old_value: filtered, new_value: filtered }
+      end
+
+      {
+        attribute: attr,
+        old_value: format_value(old_val),
+        new_value: format_value(new_val)
+      }
+    end
 
     def format_value(value)
       case value

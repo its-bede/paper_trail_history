@@ -73,6 +73,30 @@ PaperTrailHistory.configure do |config|
 end
 ```
 
+### Redacting sensitive attributes
+
+The interface shows every attribute of a record, and every before/after value in
+a version diff. Without redaction that means password digests, API tokens and
+session keys - including *historical* values that have since been rotated.
+
+By default the engine hides whatever your application already hides from its
+logs, i.e. `Rails.application.config.filter_parameters`. Attributes matched by
+that list render as `[FILTERED]` on both the record page and the diff. To hide
+more:
+
+```ruby
+config.filter_attributes += [:internal_note, /_secret\z/]
+```
+
+The list accepts everything `ActiveSupport::ParameterFilter` accepts - symbols,
+strings (substring match), regular expressions and procs - and matching is
+delegated to that class, so it behaves exactly like Rails log filtering.
+
+> [!NOTE]
+> Rails' default `filter_parameters` includes `:email`, so email addresses are
+> redacted out of the box. Set `config.filter_attributes` explicitly if that is
+> not what you want.
+
 Either `parent_controller` or `authenticate_with` satisfies the check; you can use
 both. Note the asymmetry: `authenticate_with` is a **filter** (halt the chain
 yourself with `redirect_to`/`head`, which lets you pass Devise's

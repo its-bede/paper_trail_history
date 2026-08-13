@@ -17,3 +17,5 @@ en:
       deleted: "Deleted"
     actors:
       system: "System"
+    display:
+      filtered: "[FILTERED]"

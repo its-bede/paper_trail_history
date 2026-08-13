@@ -9,7 +9,7 @@ The text uses ASD-STE100 Simplified Technical English.
 > and RuboCop found no offense. Thus no finding in this list comes from a test
 > that fails now.
 
-**Highest priority:** S1 (done), R1 (done), R9 (done), P1, S2.
+**Highest priority:** S1 (done), R1 (done), R9 (done), S2 (done), P1.
 
 ---
 
@@ -37,7 +37,7 @@ documented escape hatch.
 host controller to the engine, but the engine keeps its own layout. Make the
 layout configurable together with S3 and S4.
 
-### S2 - Hide sensitive attributes - **High**
+### S2 - Hide sensitive attributes - **High** - DONE (0.3.0)
 
 `app/views/paper_trail_history/records/show.html.erb:28`,
 `app/models/paper_trail_history/version_decorator.rb:60`
@@ -45,8 +45,8 @@ layout configurable together with S3 and S4.
 The record page prints all attributes of the record. This includes password
 digests, tokens and API keys. The version diff shows the same values.
 
-- [ ] Filter the attribute names with `Rails.application.config.filter_parameters`.
-- [ ] Add a configuration option for more filtered names.
+- [x] Filter the attribute names with `Rails.application.config.filter_parameters`.
+- [x] Add a configuration option for more filtered names.
 
 ### S3 - Remove the CDN dependency or add integrity attributes - **Medium**
 
@@ -413,11 +413,14 @@ test passes also when the filter is not correct.
 - [ ] Test STI models (R4).
 - [ ] Test the filter of sensitive attributes (S2).
 
-### T4 - Add controller tests for `RecordsController` - **Medium**
+### T4 - Add controller tests for `RecordsController` - **Medium** - PART DONE
 
-There is no test file for this controller.
+The file `test/controllers/paper_trail_history/records_controller_test.rb` now
+exists. It came with S2 and tests the `show` action and the redirect for a model
+that is not trackable.
 
-- [ ] Add `test/controllers/paper_trail_history/records_controller_test.rb`.
+- [x] Add `test/controllers/paper_trail_history/records_controller_test.rb`.
+- [ ] Test the `versions` action and its filters.
 
 ### T5 - Add coverage and security checks to the CI - **Medium**
 
