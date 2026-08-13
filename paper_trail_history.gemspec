@@ -31,6 +31,8 @@ Gem::Specification.new do |spec|
 
   spec.required_ruby_version = '>= 3.3.0'
 
+  # Pagy changes its API between major versions, thus the constraint is strict.
+  spec.add_dependency 'pagy', '~> 43.0'
   spec.add_dependency 'paper_trail', '>= 15.0'
   spec.add_dependency 'rails', '>= 8.0'
 end

@@ -23,6 +23,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Restore could modify the wrong record**: `VersionService.restore_version` now accepts the version record itself instead of only an ID. In applications with more than one version table (PaperTrail's `versions` plus a custom class such as `ProductVersion`), the same ID can exist in each table. The controller resolved the version correctly using `model_name` and then discarded it, so the restore searched by ID again and could act on a completely different record. Passing an ID still works for backwards compatibility, but is ambiguous in multi-table setups.
 
 ### Changed
+- **BREAKING**: added a runtime dependency on [Pagy](https://github.com/ddnexus/pagy) (`~> 43.0`). Applications already using an older Pagy major have to upgrade, because Pagy changes its API between majors
+- **Pagination**: version lists previously loaded every matching row into memory and decorated all of them - a model with a million versions could exhaust the process. Both version lists now read one page at a time with SQL `LIMIT`/`OFFSET`, with the page size configurable via `config.page_limit` (default 25). The limit is passed per query instead of written into the global `Pagy::OPTIONS`, so the engine does not change pagination defaults in the host application
+- The version count shown above each list now comes from the paginator instead of a second `COUNT` query
+- `RecordsController#versions` now preloads `:item`, removing an N+1 query when the list renders item names
 - `PaperTrailHistory::ApplicationController` now declares its layout explicitly, so inheriting from a host controller that declares its own layout no longer changes how engine views render
 - The dummy application configures `yaml_column_permitted_classes`, which a host application needs before PaperTrail can deserialize a record with timestamps
 

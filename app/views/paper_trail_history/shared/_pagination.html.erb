@@ -1,0 +1,6 @@
+<%# locals: (pagy:) -%>
+<% if pagy.last > 1 %>
+  <nav aria-label="Pagination" class="d-flex justify-content-center mt-3">
+    <%== pagy.series_nav(:bootstrap) %>
+  </nav>
+<% end %>

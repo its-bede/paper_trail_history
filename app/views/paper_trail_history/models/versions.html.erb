@@ -8,7 +8,7 @@
 
 <div class="d-flex justify-content-between align-items-center mb-4">
   <h1>All Versions - <%= @trackable_model.human_name %></h1>
-  <span class="badge bg-secondary"><%= @versions.count %> versions</span>
+  <span class="badge bg-secondary"><%= @pagy.count %> versions</span>
 </div>
 
 <%= render "paper_trail_history/shared/version_filters", 
@@ -19,6 +19,7 @@
   <div class="card-body">
     <% if @decorated_versions.any? %>
       <%= render "paper_trail_history/shared/versions_table", versions: @decorated_versions, show_item_link: true %>
+      <%= render "paper_trail_history/shared/pagination", pagy: @pagy %>
     <% else %>
       <div class="text-center py-4">
         <i class="bi bi-inbox display-1 text-muted"></i>

@@ -4,6 +4,8 @@ module PaperTrailHistory
   # Base controller of the engine. It applies the access rules that the host
   # application sets with PaperTrailHistory.configure.
   class ApplicationController < PaperTrailHistory.config.parent_controller_class
+    include Pagy::Method
+
     # The engine keeps its own layout, also when it descends from a controller
     # of the host application that declares a different one.
     layout 'paper_trail_history/application'
@@ -26,6 +28,17 @@ module PaperTrailHistory
     end
 
     private
+
+    # Reads one page of the given versions and decorates only that page.
+    #
+    # The engine passes the limit for each call instead of writing it into
+    # Pagy::OPTIONS, because Pagy::OPTIONS is global and belongs to the host
+    # application.
+    def paginate_versions(versions)
+      pagy, page_of_versions = pagy(:offset, versions, limit: PaperTrailHistory.config.page_limit)
+
+      [pagy, VersionDecorator.decorate_collection(page_of_versions)]
+    end
 
     def require_configured_access
       return if PaperTrailHistory.config.access_configured?

@@ -14,7 +14,7 @@
       <span class="badge bg-danger">Deleted</span>
     <% end %>
   </h1>
-  <span class="badge bg-secondary"><%= @versions.count %> versions</span>
+  <span class="badge bg-secondary"><%= @pagy.count %> versions</span>
 </div>
 
 <%= render "paper_trail_history/shared/version_filters", 
@@ -25,6 +25,7 @@
   <div class="card-body">
     <% if @decorated_versions.any? %>
       <%= render "paper_trail_history/shared/versions_table", versions: @decorated_versions %>
+      <%= render "paper_trail_history/shared/pagination", pagy: @pagy %>
     <% else %>
       <div class="text-center py-4">
         <i class="bi bi-inbox display-1 text-muted"></i>

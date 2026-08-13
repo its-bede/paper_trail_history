@@ -73,6 +73,19 @@ PaperTrailHistory.configure do |config|
 end
 ```
 
+### Page size
+
+Version tables grow without bound, so the engine reads one page at a time rather
+than loading a model's entire history into memory. The default is 25 rows:
+
+```ruby
+config.page_limit = 50
+```
+
+Pagination uses [Pagy](https://github.com/ddnexus/pagy). The limit is passed per
+query rather than written into `Pagy::OPTIONS`, so mounting this engine does not
+change pagination defaults elsewhere in your application.
+
 ### Redacting sensitive attributes
 
 The interface shows every attribute of a record, and every before/after value in
@@ -172,7 +185,7 @@ After mounting the engine, navigate to `/revisions` (or whatever path you chose)
    - View all versions for a specific model
    - Filter by event type, user, date range
    - Search within version content
-   - Pagination support
+   - Pagination (25 rows per page by default, see `config.page_limit`)
 
 3. **Record Versions** (`/revisions/models/:model_name/:record_id/versions`)
    - View version history for a specific record

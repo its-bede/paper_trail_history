@@ -9,7 +9,8 @@ The text uses ASD-STE100 Simplified Technical English.
 > and RuboCop found no offense. Thus no finding in this list comes from a test
 > that fails now.
 
-**Highest priority:** S1 (done), R1 (done), R9 (done), S2 (done), P1.
+**Highest priority:** S1 (done), R1 (done), R9 (done), S2 (done), P1 (done).
+Next: P2, P3 (rest), R2.
 
 ---
 
@@ -193,7 +194,7 @@ The gem must also help the user of the gem:
 
 ## 3. Performance
 
-### P1 - Add pagination - **Critical**
+### P1 - Add pagination - **Critical** - DONE (0.3.0)
 
 `app/controllers/paper_trail_history/models_controller.rb:42`,
 `app/controllers/paper_trail_history/records_controller.rb:45`
@@ -203,7 +204,11 @@ A production table with one million versions makes the page unusable. The proces
 can also run out of memory. The `page` parameter is permitted, but no code uses
 it. The README says "Pagination support".
 
-- [ ] Add pagination with LIMIT and OFFSET. Show page links.
+- [x] Add pagination with LIMIT and OFFSET. Show page links.
+- [x] Correct the claim in the README.
+
+The engine uses Pagy (`~> 43.0`) and `config.page_limit` (default 25). The gem
+now has a hard dependency on Pagy. See the note in the changelog.
 
 ### P2 - Do not load all rows for the filter lists - **High**
 
@@ -215,7 +220,7 @@ Ruby.
 
 - [ ] Use `distinct.pluck` on the database for each class. Then join the results.
 
-### P3 - Remove the N+1 queries - **High**
+### P3 - Remove the N+1 queries - **High** - PART DONE
 
 `app/controllers/paper_trail_history/records_controller.rb:45`,
 `app/controllers/paper_trail_history/models_controller.rb:18`,
@@ -225,9 +230,10 @@ Ruby.
 `ModelsController#versions` uses `includes(:item)`. The other three actions do
 not.
 
-- [ ] Add `includes(:item)` to each query that shows the item name.
+- [x] Add `includes(:item)` to `RecordsController#versions` (came with P1).
+- [ ] Add `includes(:item)` to `ModelsController#show` and `RecordsController#show`, which load recent versions.
 
-### P4 - Remove the unnecessary COUNT query - **Low**
+### P4 - Remove the unnecessary COUNT query - **Low** - DONE (0.3.0)
 
 `app/views/paper_trail_history/models/versions.html.erb:11`,
 `app/views/paper_trail_history/records/versions.html.erb:17`
@@ -235,7 +241,9 @@ not.
 The view calls `@versions.count`. This starts a second database query. The rows
 are already in memory.
 
-- [ ] Use `size` on the decorated array, or the total from the pagination.
+- [x] Use `size` on the decorated array, or the total from the pagination.
+
+The views use `@pagy.count`, which comes from the count query of the paginator.
 
 ### P5 - Make the content search faster - **Medium**
 

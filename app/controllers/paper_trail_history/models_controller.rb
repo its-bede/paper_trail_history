@@ -40,9 +40,8 @@ module PaperTrailHistory
     end
 
     def load_versions_data
-      @versions = VersionService.for_model(params[:name], filter_params)
-      @versions = @versions.includes(:item)
-      @decorated_versions = VersionDecorator.decorate_collection(@versions)
+      @versions = VersionService.for_model(params[:name], filter_params).includes(:item)
+      @pagy, @decorated_versions = paginate_versions(@versions)
     end
 
     def load_filter_options

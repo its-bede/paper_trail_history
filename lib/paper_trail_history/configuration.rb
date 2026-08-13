@@ -24,6 +24,18 @@ module PaperTrailHistory
     # Parent controller that the engine uses when the host application gives none.
     DEFAULT_PARENT_CONTROLLER = 'ActionController::Base'
 
+    # Number of versions on one page when the host application gives none.
+    DEFAULT_PAGE_LIMIT = 25
+
+    # Number of versions that the engine shows on one page.
+    #
+    # A version table of a production application can hold millions of rows.
+    # The engine reads one page at a time, thus this value also limits the
+    # memory that one request needs.
+    #
+    # @return [Integer]
+    attr_accessor :page_limit
+
     # @return [String] name of the controller class that the engine controllers descend from
     attr_accessor :parent_controller
 
@@ -63,6 +75,7 @@ module PaperTrailHistory
       @allow_unauthenticated_access = false
       @filter_attributes = nil
       @parameter_filter = nil
+      @page_limit = DEFAULT_PAGE_LIMIT
     end
 
     # Attribute names whose values the engine must not show.
