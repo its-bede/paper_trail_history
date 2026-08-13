@@ -17,11 +17,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Attribute redaction**: the record page and the version diff previously printed every attribute verbatim, including password digests, API tokens and their historical values. Values are now redacted using `Rails.application.config.filter_parameters` by default, and `config.filter_attributes` extends the list. Matching is delegated to `ActiveSupport::ParameterFilter`, so symbols, strings, regular expressions and procs all behave as they do in Rails log filtering
 - **Separate restore authorization**: `authorize_restore_with` gates the destructive `restore` action independently from read access, so teams can grant read-only history access
 - **Security documentation**: New README section covering the threat model, both configuration styles and route-level protection
-- **Security scanning and coverage in CI**: `bundler-audit` and `brakeman` now run on every push, and the suite enforces a coverage floor with SimpleCov (currently 97.6% line, 89.7% branch). The audit found known vulnerabilities in `action_text-trix`, `actionpack`, `actionview`, `puma`, `rack` and `sqlite3` on its first run; all are updated
+- **Security scanning and coverage in CI**: `bundler-audit` and `brakeman` now run on every push, and the suite enforces a coverage floor with SimpleCov (currently 96.6% line, 87.2% branch). The audit found known vulnerabilities in `action_text-trix`, `actionpack`, `actionview`, `puma`, `rack` and `sqlite3` on its first run; all are updated
 - **API documentation**: the public API now carries YARD documentation with `@param`, `@return`, `@raise` and examples, and internal helpers are marked `@api private`. `rake yard` generates the docs and `rake yard:coverage` fails when a public object has none; CI runs the latter
 
 ### Fixed
-- **Model list was slow with many version tables**: building the version-count column costs one `COUNT` per version table, and a count reads the whole table. An application that gives each model its own version table therefore paid one full table read per model on the engine's landing page — with ~120 models and tables in the millions of rows, tens of seconds. The column is now off by default (`config.show_version_counts = true` restores it); each model's own page still shows its count as a single query. Counting STI subclasses no longer needs a query per subclass either: the grouped count now groups by `item_type` **and** `item_subtype`, which removes the extra query per subclass that 0.3.0 had introduced
+- **Model list was slow with many version tables**: building the version-count column costs one `COUNT` per version table, and a count reads the whole table. An application that gives each model its own version table therefore paid one full table read per model on the engine's landing page — with ~120 models and tables in the millions of rows, tens of seconds. The column is now off by default (`config.show_version_counts = true` restores it); each model's own page still shows its count as a single query. Counting STI subclasses no longer needs a query per subclass either: the grouped count now groups by `item_type` **and** `item_subtype`, which also avoids the extra per-subclass query that the STI fix in this same release would otherwise have added
 - **Wildcards in the search were not escaped**: a search for `%` matched every row, because the user's input went into a `LIKE` pattern unescaped. Input is now escaped with an explicit `ESCAPE` clause, which SQLite needs, and capped at 100 characters
 - **Model discovery walked every object in the process**: `ObjectSpace.each_object(Class)` is slow and also returns classes that Rails has removed. The engine asks `ActiveRecord::Base.descendants` instead
 - **Records with a non-integer primary key**: the record page looked up `find_by(id:)`, which fails outright for a model whose primary key is not `id`
@@ -45,12 +45,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **BREAKING**: added a runtime dependency on [Pagy](https://github.com/ddnexus/pagy) (`~> 43.0`). Applications already using an older Pagy major have to upgrade, because Pagy changes its API between majors
 - **Pagination**: version lists previously loaded every matching row into memory and decorated all of them - a model with a million versions could exhaust the process. Both version lists now read one page at a time with SQL `LIMIT`/`OFFSET`, with the page size configurable via `config.page_limit` (default 25). The limit is passed per query instead of written into the global `Pagy::OPTIONS`, so the engine does not change pagination defaults in the host application
 - The version count shown above each list now comes from the paginator instead of a second `COUNT` query
-- `RecordsController#versions` now preloads `:item`, removing an N+1 query when the list renders item names
 - `PaperTrailHistory::ApplicationController` now declares its layout explicitly, so inheriting from a host controller that declares its own layout no longer changes how engine views render
 - The dummy application configures `yaml_column_permitted_classes`, which a host application needs before PaperTrail can deserialize a record with timestamps
 
 ### Upgrading from 0.2.x
-Add `config/initializers/paper_trail_history.rb` and set either `parent_controller` or `authenticate_with` before deploying. If another layer already protects the mount point, set `allow_unauthenticated_access = true` instead. See the Security section of the README.
+
+Four changes need attention. All are configurable in `config/initializers/paper_trail_history.rb`.
+
+1. **Access control is now required.** Set either `parent_controller` or `authenticate_with`, or the engine answers `403` outside development and test. If another layer already protects the mount point, set `allow_unauthenticated_access = true`.
+2. **Pagy `~> 43.0` is a new runtime dependency.** An application on an older Pagy major has to upgrade, because Pagy changes its API between majors.
+3. **Attribute values are redacted by default** using your `config.filter_parameters`. Rails' default list includes `:email`, so email addresses are hidden out of the box; set `config.filter_attributes` if that is not what you want.
+4. **The model list no longer shows version counts.** Set `config.show_version_counts = true` to restore the column — but read the note in the README first if your application has many version tables.
+
+Two further settings are worth checking even though nothing breaks without them:
+`config.active_record.yaml_column_permitted_classes` must include the types your models store, or restoring fails; and if your versions table has no `item_subtype` column, STI subclasses show their base class's history.
 
 ## [0.2.1] - 2025-12-16
 
