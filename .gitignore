@@ -20,3 +20,6 @@
 
 # Test coverage
 /coverage/
+
+# Locks of the version matrix are per machine, not for Git
+/gemfiles/*.lock
