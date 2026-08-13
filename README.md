@@ -73,6 +73,32 @@ PaperTrailHistory.configure do |config|
 end
 ```
 
+### Assets and Content Security Policy
+
+The interface uses Bootstrap, loaded from jsDelivr by default and pinned with a
+subresource integrity hash so a tampered file is rejected by the browser. The
+engine's own inline `<style>` and `<script>` carry the CSP nonce when your
+application generates one, so a nonce-based policy works without `unsafe-inline`.
+
+To serve the files yourself - required for an air-gapped network, or a policy
+that allows no third-party origin - point them at your own assets and drop the
+integrity hashes:
+
+```ruby
+config.assets = {
+  bootstrap_css:       { href: '/assets/bootstrap.css' },
+  bootstrap_icons_css: { href: '/assets/bootstrap-icons.css' },
+  bootstrap_js:        { href: '/assets/bootstrap.bundle.js' }
+}
+```
+
+> [!WARNING]
+> If your nonce generator returns an empty string the browser rejects the whole
+> nonce source and blocks all inline style and script. Rails' commented-out
+> suggestion, `request.session.id.to_s`, does exactly that on a request with no
+> session yet. Prefer something that always yields a value, e.g.
+> `->(_request) { SecureRandom.base64(16) }`.
+
 ### Single table inheritance
 
 PaperTrail records the **base class** name in `item_type`, so a version created

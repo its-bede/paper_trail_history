@@ -27,6 +27,44 @@ module PaperTrailHistory
     # Number of versions on one page when the host application gives none.
     DEFAULT_PAGE_LIMIT = 25
 
+    # The interface uses Bootstrap. The engine loads it from a public CDN and
+    # protects each file with a subresource integrity value, thus the browser
+    # refuses a file that somebody changed.
+    #
+    # The values belong to the pinned versions below. If you change a URL, you
+    # must also change the integrity value or remove it.
+    DEFAULT_ASSETS = {
+      bootstrap_css: {
+        href: 'https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css',
+        integrity: 'sha384-9ndCyUaIbzAi2FUVXJi0CjmCapSmO7SnpJef0486qhLnuZ2cdeRhO02iuK6FUUVM'
+      },
+      bootstrap_icons_css: {
+        href: 'https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css',
+        integrity: 'sha384-l4UPAMHGzl7zwogLW4nOwaU2XTk6oiM1jhCRQstZEndoIiA2I5bg6fST3wzBSRBD'
+      },
+      bootstrap_js: {
+        href: 'https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js',
+        integrity: 'sha384-geWF76RCwLtnZ8qwWowPQNguL3RmwHVBC9FhGdlKrxdiJJigb/j/68SIy3Te4Bkz'
+      }
+    }.freeze
+
+    # The files that the interface loads.
+    #
+    # Each entry has a +:href+ and an optional +:integrity+. Give your own URL to
+    # serve the files from the host application. This is necessary for a network
+    # without internet, and for a Content Security Policy that permits no other
+    # origin. Remove the +:integrity+ value for a file that you serve yourself.
+    #
+    # @example Serve the files from the host application
+    #   config.assets = {
+    #     bootstrap_css:       { href: '/assets/bootstrap.css' },
+    #     bootstrap_icons_css: { href: '/assets/bootstrap-icons.css' },
+    #     bootstrap_js:        { href: '/assets/bootstrap.bundle.js' }
+    #   }
+    #
+    # @return [Hash{Symbol => Hash}]
+    attr_accessor :assets
+
     # Number of versions that the engine shows on one page.
     #
     # A version table of a production application can hold millions of rows.
@@ -76,6 +114,7 @@ module PaperTrailHistory
       @filter_attributes = nil
       @parameter_filter = nil
       @page_limit = DEFAULT_PAGE_LIMIT
+      @assets = DEFAULT_ASSETS
     end
 
     # Attribute names whose values the engine must not show.

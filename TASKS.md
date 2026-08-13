@@ -10,8 +10,8 @@ The text uses ASD-STE100 Simplified Technical English.
 > that fails now.
 
 **Highest priority:** S1, R1, R9, S2, P1, R2, D2, P2, P3, R4 - all done.
-Next: S3 and S4 (assets, CSP - three tasks made this debt larger), then Q5
-(localize the views), D1 (YARD) and P6.
+Next: Q5 (localize the views), D1 (YARD), P6, then the small ones R7, R8, P5,
+Q1, Q2, Q3 and the test tasks T1 to T5.
 
 ---
 
@@ -50,7 +50,7 @@ digests, tokens and API keys. The version diff shows the same values.
 - [x] Filter the attribute names with `Rails.application.config.filter_parameters`.
 - [x] Add a configuration option for more filtered names.
 
-### S3 - Remove the CDN dependency or add integrity attributes - **Medium**
+### S3 - Remove the CDN dependency or add integrity attributes - **Medium** - DONE (0.3.0)
 
 `app/views/layouts/paper_trail_history/application.html.erb:11,12,123`
 
@@ -58,9 +58,15 @@ The layout gets Bootstrap CSS and JS from a public CDN. There is no `integrity`
 attribute. A person who controls the CDN can run code in the page. The interface
 also does not work in a network without internet.
 
-- [ ] Put the assets into the engine, or add `integrity` and `crossorigin`.
+- [x] Add `integrity` and `crossorigin`. The values were computed from the real files.
+- [x] Give a configuration option, thus the host application can serve the files itself.
 
-### S4 - Make the layout work with a strict Content Security Policy - **Medium**
+The files stay on the CDN by default. To put them into the gem would need an
+asset pipeline that works with Propshaft, Sprockets and Importmap in the host
+application, and it would make the gem about 1 MB larger. `config.assets` gives
+the user the choice.
+
+### S4 - Make the layout work with a strict Content Security Policy - **Medium** - DONE (0.3.0)
 
 `app/views/layouts/paper_trail_history/application.html.erb:14,124`
 
@@ -68,7 +74,16 @@ The inline `<style>` and `<script>` blocks have no nonce. The layout prints
 `csp_meta_tag`, but it does not use the nonce. A host application with a strict
 CSP shows a page without styles and without scripts.
 
-- [ ] Use `stylesheet_link_tag` / `javascript_tag nonce: true`, or move the code to asset files.
+- [x] Give the inline style and the inline script a nonce. The external tags also get one, thus a policy with nonces permits them too.
+
+The dummy application now uses a strict policy, thus the test suite runs against
+it. The interface was also checked with a browser: no violation, the style is
+active and the script runs.
+
+**Found while testing:** an empty nonce is worse than no nonce. The browser
+refuses the whole source list and blocks everything. The engine writes no
+attribute if the host application makes no nonce. The README warns about the
+suggestion of Rails, `request.session.id.to_s`, which is empty without a session.
 
 ### S5 - Escape the LIKE wildcards in the search - **Low**
 
@@ -340,14 +355,15 @@ different.
 
 - [ ] Move the method to `ApplicationController`.
 
-### Q4 - Move the CSS and the JavaScript out of the layout - **Low**
+### Q4 - Move the CSS and the JavaScript out of the layout - **Low** - PART DONE
 
 `app/views/layouts/paper_trail_history/application.html.erb`
 
 80 lines of CSS and 16 lines of JavaScript are in the layout file. Task S4 needs
 this change also.
 
-- [ ] Put the CSS and the JavaScript into asset files.
+- [x] Put the CSS and the JavaScript into partials. The layout went from 143 to 51 lines.
+- [ ] Put them into real asset files. This needs an asset pipeline for the engine that works with Propshaft, Sprockets and Importmap.
 
 ### Q5 - Localize the texts of the views - **Medium**
 
