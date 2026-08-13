@@ -10,8 +10,8 @@ The text uses ASD-STE100 Simplified Technical English.
 > that fails now.
 
 **Highest priority:** S1, R1, R9, S2, P1, R2, D2, P2, P3, R4 - all done.
-Next: Q5 (localize the views), D1 (YARD), P6, then the small ones R7, R8, P5,
-Q1, Q2, Q3 and the test tasks T1 to T5.
+Next: D1 (YARD), P6, then the small ones R7, R8, P5, Q1, Q2, Q3 and the test
+tasks T1 to T5.
 
 ---
 
@@ -365,7 +365,7 @@ this change also.
 - [x] Put the CSS and the JavaScript into partials. The layout went from 143 to 51 lines.
 - [ ] Put them into real asset files. This needs an asset pipeline for the engine that works with Propshaft, Sprockets and Importmap.
 
-### Q5 - Localize the texts of the views - **Medium**
+### Q5 - Localize the texts of the views - **Medium** - DONE (0.3.0)
 
 All view files, `app/models/paper_trail_history/version_decorator.rb:27,86-102`
 
@@ -374,8 +374,16 @@ strings in the code ("Version Details", "Restore This Version").
 `formatted_created_at` uses a fixed US format. The texts `(empty)` and `(blank)`
 are not in the locale files.
 
-- [ ] Move all texts to the locale files.
-- [ ] Use `I18n.l` for the date and the time.
+- [x] Move all texts to the locale files.
+- [x] Use `I18n.l` for the date and the time. The format string comes from the locale.
+
+The English output did not change, thus the tests that check English text still
+pass. The test environment now raises for a missing translation. Two new test
+files protect the work: one renders each page in German, one compares the keys
+and the interpolations of the locale files.
+
+**Open point:** the gem gives only English and German. An application with a
+third language needs `config.i18n.fallbacks`. The README says this.
 
 ### Q6 - Remove the placeholder comment - **Low**
 

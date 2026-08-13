@@ -2,9 +2,9 @@
   <div class="card-header">
     <h6 class="mb-0">
       <i class="bi bi-funnel"></i>
-      Filters
+      <%= t('.title') %>
       <button class="btn btn-sm btn-outline-secondary ms-2" type="button" data-bs-toggle="collapse" data-bs-target="#filterCollapse">
-        Toggle
+        <%= t('.toggle') %>
       </button>
     </h6>
   </div>
@@ -12,40 +12,40 @@
     <div class="card-body">
       <%= form_with url: request.path, method: :get, local: true, class: "row g-3" do |f| %>
         <div class="col-md-3">
-          <%= f.label :event, class: "form-label" %>
+          <%= f.label :event, t('.event'), class: "form-label" %>
           <%= f.select :event, 
-              options_for_select([["All Events", ""]] + available_events.map { |e| [e.humanize, e] }, params[:event]),
+              options_for_select([[t('.all_events'), '']] + available_events.map { |e| [e.humanize, e] }, params[:event]),
               {}, { class: "form-select" } %>
         </div>
         
         <% if available_whodunnits %>
           <div class="col-md-3">
-            <%= f.label :whodunnit, "Who", class: "form-label" %>
+            <%= f.label :whodunnit, t('.who'), class: "form-label" %>
             <%= f.select :whodunnit,
-                options_for_select([["Anyone", ""]] + available_whodunnits.map { |w| [w || "System", w] }, params[:whodunnit]),
+                options_for_select([[t('.anyone'), '']] + available_whodunnits.map { |w| [w || t('paper_trail_history.actors.system'), w] }, params[:whodunnit]),
                 {}, { class: "form-select" } %>
           </div>
         <% end %>
         
         <div class="col-md-2">
-          <%= f.label :from_date, "From Date", class: "form-label" %>
+          <%= f.label :from_date, t('.from_date'), class: "form-label" %>
           <%= f.date_field :from_date, value: params[:from_date], class: "form-control" %>
         </div>
         
         <div class="col-md-2">
-          <%= f.label :to_date, "To Date", class: "form-label" %>
+          <%= f.label :to_date, t('.to_date'), class: "form-label" %>
           <%= f.date_field :to_date, value: params[:to_date], class: "form-control" %>
         </div>
         
         <div class="col-md-2">
-          <%= f.label :search, "Search Changes", class: "form-label" %>
-          <%= f.text_field :search, value: params[:search], class: "form-control", placeholder: "Search..." %>
+          <%= f.label :search, t('.search'), class: "form-label" %>
+          <%= f.text_field :search, value: params[:search], class: "form-control", placeholder: t('.search_placeholder') %>
         </div>
         
         <div class="col-12">
           <div class="d-flex gap-2">
-            <%= f.submit "Apply Filters", class: "btn btn-primary" %>
-            <%= link_to "Clear", request.path, class: "btn btn-outline-secondary" %>
+            <%= f.submit t('.apply'), class: "btn btn-primary" %>
+            <%= link_to t('.clear'), request.path, class: "btn btn-outline-secondary" %>
           </div>
         </div>
       <% end %>

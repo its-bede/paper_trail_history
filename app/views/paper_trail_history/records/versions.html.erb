@@ -1,20 +1,20 @@
 <nav aria-label="breadcrumb">
   <ol class="breadcrumb">
-    <li class="breadcrumb-item"><%= link_to "Models", models_path %></li>
+    <li class="breadcrumb-item"><%= link_to t('paper_trail_history.common.models'), models_path %></li>
     <li class="breadcrumb-item"><%= link_to @trackable_model.human_name, model_path(@trackable_model.name) %></li>
-    <li class="breadcrumb-item"><%= link_to "Record ##{@record_id}", model_record_path(@trackable_model.name, @record_id) %></li>
-    <li class="breadcrumb-item active">All Versions</li>
+    <li class="breadcrumb-item"><%= link_to t('.record_breadcrumb', id: @record_id), model_record_path(@trackable_model.name, @record_id) %></li>
+    <li class="breadcrumb-item active"><%= t('.breadcrumb') %></li>
   </ol>
 </nav>
 
 <div class="d-flex justify-content-between align-items-center mb-4">
   <h1>
-    All Versions - <%= @trackable_model.human_name %> #<%= @record_id %>
+    <%= t('.title', model: @trackable_model.human_name, id: @record_id) %>
     <% if @record.nil? %>
-      <span class="badge bg-danger">Deleted</span>
+      <span class="badge bg-danger"><%= t('paper_trail_history.display.deleted_badge') %></span>
     <% end %>
   </h1>
-  <span class="badge bg-secondary"><%= @pagy.count %> versions</span>
+  <span class="badge bg-secondary"><%= t('paper_trail_history.common.version_count', count: @pagy.count) %></span>
 </div>
 
 <%= render "paper_trail_history/shared/version_filters", 
@@ -29,8 +29,8 @@
     <% else %>
       <div class="text-center py-4">
         <i class="bi bi-inbox display-1 text-muted"></i>
-        <p class="text-muted">No versions found matching your criteria.</p>
-        <%= link_to "Clear Filters", versions_model_record_path(@trackable_model.name, @record_id), class: "btn btn-outline-secondary" %>
+        <p class="text-muted"><%= t('.no_versions_match') %></p>
+        <%= link_to t('.clear_filters'), versions_model_record_path(@trackable_model.name, @record_id), class: "btn btn-outline-secondary" %>
       </div>
     <% end %>
   </div>

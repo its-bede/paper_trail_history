@@ -2,14 +2,14 @@
   <table class="table table-striped">
     <thead>
       <tr>
-        <th>Version</th>
-        <th>Event</th>
-        <th>When</th>
-        <th>Who</th>
+        <th><%= t('.version') %></th>
+        <th><%= t('.event') %></th>
+        <th><%= t('.when') %></th>
+        <th><%= t('.who') %></th>
         <% if local_assigns[:show_item_link] %>
-          <th>Item</th>
+          <th><%= t('.item') %></th>
         <% end %>
-        <th>Actions</th>
+        <th><%= t('.actions') %></th>
       </tr>
     </thead>
     <tbody>
@@ -41,9 +41,9 @@
           <% end %>
           <td>
             <div class="btn-group btn-group-sm">
-              <%= link_to "View", version_link_path(decorated_version.version), class: "btn btn-outline-primary btn-sm" %>
+              <%= link_to t('.view'), version_link_path(decorated_version.version), class: "btn btn-outline-primary btn-sm" %>
               <% if decorated_version.can_restore? %>
-                <%= button_to "Restore",
+                <%= button_to t('.restore'),
                     restore_version_link_path(decorated_version.version),
                     method: :patch,
                     form: { data: { pth_confirm: t("paper_trail_history.confirmations.restore_version") } },

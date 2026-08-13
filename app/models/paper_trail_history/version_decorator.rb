@@ -24,7 +24,7 @@ module PaperTrailHistory
     end
 
     def formatted_created_at
-      version.created_at.strftime('%B %d, %Y at %I:%M %p')
+      format_time(version.created_at)
     end
 
     def event_label
@@ -70,14 +70,21 @@ module PaperTrailHistory
     end
 
     def item_display_name
-      if version.item
-        version.item.try(:name) || version.item.try(:title) || "#{version.item_type} ##{version.item_id}"
-      else
-        "#{version.item_type} ##{version.item_id} (deleted)"
-      end
+      return deleted_item_name unless version.item
+
+      version.item.try(:name) || version.item.try(:title) || item_reference
     end
 
     private
+
+    def item_reference
+      "#{version.item_type} ##{version.item_id}"
+    end
+
+    def deleted_item_name
+      I18n.t('paper_trail_history.display.deleted_item',
+             item_type: version.item_type, item_id: version.item_id)
+    end
 
     # Hides both values of an attribute that the host application filters. A
     # diff shows the old value and the new value, thus showing either of them
@@ -97,20 +104,22 @@ module PaperTrailHistory
 
     def format_value(value)
       case value
-      when nil then '(empty)'
-      when '' then '(blank)'
+      when nil then I18n.t('paper_trail_history.display.empty')
+      when '' then I18n.t('paper_trail_history.display.blank')
       when Time then format_time(value)
       when Date then format_date(value)
       else value.to_s.truncate(100)
       end
     end
 
+    # The format string comes from the locale, thus each language can order the
+    # parts in its own way. I18n.l also translates the names of the months.
     def format_time(time)
-      time.strftime('%B %d, %Y at %I:%M %p')
+      I18n.l(time, format: I18n.t('paper_trail_history.formats.datetime'))
     end
 
     def format_date(date)
-      date.strftime('%B %d, %Y')
+      I18n.l(date, format: I18n.t('paper_trail_history.formats.date'))
     end
   end
 end

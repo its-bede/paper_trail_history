@@ -130,6 +130,24 @@ Pagination uses [Pagy](https://github.com/ddnexus/pagy). The limit is passed per
 query rather than written into `Pagy::OPTIONS`, so mounting this engine does not
 change pagination defaults elsewhere in your application.
 
+### Translations
+
+Every string in the interface goes through I18n. The gem ships **English and
+German**; dates and times use per-locale format strings, so each language orders
+them its own way.
+
+To translate the interface into another language, add a locale file under the
+`paper_trail_history` scope - see `config/locales/en.yml` in this gem for the
+full set of keys. To override individual strings, define the same key in your
+application; your locale files load after the engine's and win.
+
+> [!NOTE]
+> Because only `en` and `de` ship, an application running under a third locale
+> gets missing-translation errors unless I18n fallbacks are enabled:
+> ```ruby
+> config.i18n.fallbacks = [:en]
+> ```
+
 ### Redacting sensitive attributes
 
 The interface shows every attribute of a record, and every before/after value in

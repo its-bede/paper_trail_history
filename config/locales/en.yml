@@ -13,11 +13,110 @@ en:
       restore_to_previous: "Record restored to previous version"
     events:
       created: "Created"
-      updated: "Updated" 
+      updated: "Updated"
       deleted: "Deleted"
     actors:
       system: "System"
     display:
       filtered: "[FILTERED]"
+      empty: "(empty)"
+      blank: "(blank)"
+      deleted_badge: "Deleted"
+      deleted_item: "%{item_type} #%{item_id} (deleted)"
     confirmations:
       restore_version: "Restore this version? This overwrites the current data of the record. The change creates a new version."
+    formats:
+      datetime: "%B %d, %Y at %I:%M %p"
+      date: "%B %d, %Y"
+    layout:
+      title: "Paper Trail History"
+      brand: "Paper Trail History"
+      all_models: "All Models"
+    common:
+      models: "Models"
+      version_count:
+        one: "1 version"
+        other: "%{count} versions"
+    models:
+      index:
+        title: "Trackable Models"
+        model_count:
+          one: "1 model"
+          other: "%{count} models"
+        model: "Model"
+        table_name: "Table Name"
+        version_table: "Version Table"
+        total_versions: "Total Versions"
+        actions: "Actions"
+        view_model: "View Model Details"
+        view_versions: "View All Versions"
+        no_models_html: "No trackable models found. Make sure you have models with <code>has_paper_trail</code> configured."
+      show:
+        all_versions: "All Versions"
+        model_information: "Model Information"
+        model_name: "Model Name:"
+        table_name: "Table Name:"
+        total_versions: "Total Versions:"
+        recent_versions: "Recent Versions"
+        view_all: "View All"
+        no_versions: "No versions found for this model."
+      versions:
+        breadcrumb: "All Versions"
+        title: "All Versions - %{model}"
+        no_versions_match: "No versions found matching your criteria."
+        clear_filters: "Clear Filters"
+    records:
+      show:
+        breadcrumb: "Record #%{id}"
+        all_versions: "All Versions"
+        current_record: "Current Record"
+        version_history: "Version History"
+        view_all: "View All"
+        no_versions: "No versions found for this record."
+      versions:
+        breadcrumb: "All Versions"
+        record_breadcrumb: "Record #%{id}"
+        title: "All Versions - %{model} #%{id}"
+        no_versions_match: "No versions found matching your criteria."
+        clear_filters: "Clear Filters"
+    versions:
+      show:
+        breadcrumb: "Version #%{id}"
+        title: "Version Details"
+        restore: "Restore This Version"
+        view_record: "View Record"
+        version_information: "Version Information"
+        version_id: "Version ID:"
+        event: "Event:"
+        when: "When:"
+        who: "Who:"
+        item: "Item:"
+        restore_title: "Restore Version"
+        restore_text_html: "This will restore the record to the state it was in at this version. <strong>This action cannot be undone</strong>, but will create a new version entry."
+        cannot_restore_title: "Cannot Restore"
+        cannot_restore_text: "This version represents the initial creation of the record and cannot be restored."
+        changes_made: "Changes Made"
+        no_changes: "No detailed change information available for this version."
+    shared:
+      versions_table:
+        version: "Version"
+        event: "Event"
+        when: "When"
+        who: "Who"
+        item: "Item"
+        actions: "Actions"
+        view: "View"
+        restore: "Restore"
+      version_filters:
+        title: "Filters"
+        toggle: "Toggle"
+        event: "Event"
+        all_events: "All Events"
+        who: "Who"
+        anyone: "Anyone"
+        from_date: "From Date"
+        to_date: "To Date"
+        search: "Search Changes"
+        search_placeholder: "Search..."
+        apply: "Apply Filters"
+        clear: "Clear"

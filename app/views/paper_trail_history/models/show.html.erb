@@ -1,6 +1,6 @@
 <nav aria-label="breadcrumb">
   <ol class="breadcrumb">
-    <li class="breadcrumb-item"><%= link_to "Models", models_path %></li>
+    <li class="breadcrumb-item"><%= link_to t('paper_trail_history.common.models'), models_path %></li>
     <li class="breadcrumb-item active"><%= @trackable_model.human_name %></li>
   </ol>
 </nav>
@@ -8,7 +8,7 @@
 <div class="d-flex justify-content-between align-items-center mb-4">
   <h1><%= @trackable_model.human_name %></h1>
   <div>
-    <%= link_to "All Versions", versions_model_path(@trackable_model.name), class: "btn btn-primary" %>
+    <%= link_to t('.all_versions'), versions_model_path(@trackable_model.name), class: "btn btn-primary" %>
   </div>
 </div>
 
@@ -16,15 +16,15 @@
   <div class="col-md-8">
     <div class="card">
       <div class="card-body">
-        <h5 class="card-title">Model Information</h5>
+        <h5 class="card-title"><%= t('.model_information') %></h5>
         <dl class="row">
-          <dt class="col-sm-3">Model Name:</dt>
+          <dt class="col-sm-3"><%= t('.model_name') %></dt>
           <dd class="col-sm-9"><code><%= @trackable_model.name %></code></dd>
           
-          <dt class="col-sm-3">Table Name:</dt>
+          <dt class="col-sm-3"><%= t('.table_name') %></dt>
           <dd class="col-sm-9"><code><%= @trackable_model.table_name %></code></dd>
           
-          <dt class="col-sm-3">Total Versions:</dt>
+          <dt class="col-sm-3"><%= t('.total_versions') %></dt>
           <dd class="col-sm-9">
             <span class="badge bg-primary"><%= @trackable_model.total_versions_count %></span>
           </dd>
@@ -36,14 +36,14 @@
 
 <div class="card">
   <div class="card-header d-flex justify-content-between align-items-center">
-    <h5 class="mb-0">Recent Versions</h5>
-    <%= link_to "View All", versions_model_path(@trackable_model.name), class: "btn btn-sm btn-outline-primary" %>
+    <h5 class="mb-0"><%= t('.recent_versions') %></h5>
+    <%= link_to t('.view_all'), versions_model_path(@trackable_model.name), class: "btn btn-sm btn-outline-primary" %>
   </div>
   <div class="card-body">
     <% if @recent_versions.any? %>
       <%= render "paper_trail_history/shared/versions_table", versions: @recent_versions, show_item_link: true %>
     <% else %>
-      <p class="text-muted">No versions found for this model.</p>
+      <p class="text-muted"><%= t('.no_versions') %></p>
     <% end %>
   </div>
 </div>

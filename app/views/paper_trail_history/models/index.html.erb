@@ -1,6 +1,6 @@
 <div class="d-flex justify-content-between align-items-center mb-4">
-  <h1>Trackable Models</h1>
-  <span class="badge bg-secondary"><%= @trackable_models.count %> models</span>
+  <h1><%= t('.title') %></h1>
+  <span class="badge bg-secondary"><%= t('.model_count', count: @trackable_models.count) %></span>
 </div>
 
 <% if @trackable_models.any? %>
@@ -10,11 +10,11 @@
         <table class="table table-striped">
           <thead>
             <tr>
-              <th><i class="bi bi-database-fill"></i> Model</th>
-              <th>Table Name</th>
-              <th>Version Table</th>
-              <th>Total Versions</th>
-              <th>Actions</th>
+              <th><i class="bi bi-database-fill"></i> <%= t('.model') %></th>
+              <th><%= t('.table_name') %></th>
+              <th><%= t('.version_table') %></th>
+              <th><%= t('.total_versions') %></th>
+              <th><%= t('.actions') %></th>
             </tr>
           </thead>
           <tbody>
@@ -40,12 +40,12 @@
                   <div class="btn-group btn-group-sm" role="group">
                     <%= link_to model_path(model.name), 
                         class: "btn btn-outline-secondary", 
-                        data: { bs_toggle: "tooltip", bs_title: "View Model Details" } do %>
+                        data: { bs_toggle: "tooltip", bs_title: t('.view_model') } do %>
                       <i class="bi bi-eye"></i>
                     <% end %>
                     <%= link_to versions_model_path(model.name), 
                         class: "btn btn-primary", 
-                        data: { bs_toggle: "tooltip", bs_title: "View All Versions" } do %>
+                        data: { bs_toggle: "tooltip", bs_title: t('.view_versions') } do %>
                       <i class="bi bi-clock-history"></i>
                     <% end %>
                   </div>
@@ -60,6 +60,6 @@
 <% else %>
   <div class="alert alert-info">
     <i class="bi bi-info-circle"></i>
-    No trackable models found. Make sure you have models with <code>has_paper_trail</code> configured.
+    <%= t('.no_models_html') %>
   </div>
 <% end %>
