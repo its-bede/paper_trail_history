@@ -470,38 +470,45 @@ All items are done. The file is not useful for the user of the gem.
 
 ## 6. Tests and CI
 
-### T1 - Correct the tests that test nothing - **High**
+### T1 - Correct the tests that test nothing - **High** - DONE (0.3.0)
 
 `test/models/paper_trail_history/version_service_test.rb:11-42`
 
 Tests such as `assert_respond_to versions, :where` do not test the filter. The
 test passes also when the filter is not correct.
 
-- [ ] Make version rows with known data.
-- [ ] Check the IDs in the result. Test each filter.
+- [x] Make version rows with known data.
+- [x] Check the IDs in the result. Test each filter.
 
-### T2 - Delete the empty test file - **Low**
+The same problem was also in `trackable_model_test.rb` and
+`version_decorator_test.rb`: `return if trackable_models.empty?` and
+`if changes.any?` make a test that passes with an empty result. A mutation that
+switches the filters off now makes the tests fail.
+
+### T2 - Delete the empty test file - **Low** - DONE (0.3.0)
 
 `test/integration/navigation_test.rb` has no test.
 
-- [ ] Delete the file.
+- [x] Delete the file.
 
-### T3 - Add tests for the faults above - **High**
+### T3 - Add tests for the faults above - **High** - DONE (0.3.0)
 
-- [ ] Test an invalid date (R2).
-- [ ] Test a nil trackable model (R3).
-- [ ] Test a restore with two version tables (R1).
-- [ ] Test STI models (R4).
-- [ ] Test the filter of sensitive attributes (S2).
+- [x] Test an invalid date (R2).
+- [x] Test a nil trackable model (R3).
+- [x] Test a restore with two version tables (R1).
+- [x] Test STI models (R4).
+- [x] Test the filter of sensitive attributes (S2).
 
-### T4 - Add controller tests for `RecordsController` - **Medium** - PART DONE
+Each test came with the task that repaired the fault.
+
+### T4 - Add controller tests for `RecordsController` - **Medium** - DONE (0.3.0)
 
 The file `test/controllers/paper_trail_history/records_controller_test.rb` now
 exists. It came with S2 and tests the `show` action and the redirect for a model
 that is not trackable.
 
 - [x] Add `test/controllers/paper_trail_history/records_controller_test.rb`.
-- [ ] Test the `versions` action and its filters.
+- [x] Test the `versions` action, its filter and a record that is deleted.
 
 ### T5 - Add coverage and security checks to the CI - **Medium**
 

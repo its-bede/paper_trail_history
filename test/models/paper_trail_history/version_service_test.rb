@@ -8,47 +8,83 @@ module PaperTrailHistory
       @version = create_test_version
     end
 
-    test 'filters versions by model' do
-      versions = VersionService.for_model('User')
-      assert_respond_to versions, :where
+    test 'gives the versions of the named model' do
+      wanted = create_test_version
+      other = create_test_version(item_type: 'Post')
+
+      ids = VersionService.for_model('User').map(&:id)
+
+      assert_equal [wanted.id], ids & [wanted.id, other.id]
     end
 
-    test 'filters versions by event' do
-      versions = VersionService.for_model('User', event: 'update')
-      assert_respond_to versions, :where
+    test 'gives no versions for a model that is not trackable' do
+      assert_empty VersionService.for_model('NoSuchModel')
     end
 
-    test 'filters versions by whodunnit' do
-      versions = VersionService.for_model('User', whodunnit: 'user123')
-      assert_respond_to versions, :where
+    test 'gives the versions in the order of the newest first' do
+      old_version = create_test_version(created_at: 2.days.ago)
+      new_version = create_test_version(created_at: 1.hour.ago)
+
+      ids = VersionService.for_model('User').map(&:id)
+
+      assert_operator ids.index(new_version.id), :<, ids.index(old_version.id)
     end
 
-    test 'filters versions by date range' do
-      from_date = 1.week.ago.to_date.to_s
-      to_date = Date.current.to_s
+    test 'keeps only the versions with the named event' do
+      wanted = create_test_version(event: 'destroy')
+      other = create_test_version(event: 'update')
 
-      versions = VersionService.for_model('User', from_date: from_date, to_date: to_date)
-      assert_respond_to versions, :where
+      ids = VersionService.for_model('User', event: 'destroy').map(&:id)
+
+      assert_equal [wanted.id], ids & [wanted.id, other.id]
     end
 
-    test 'searches versions by content' do
-      versions = VersionService.for_model('User', search: 'test')
-      assert_respond_to versions, :where
+    test 'keeps only the versions of the named person' do
+      wanted = create_test_version(whodunnit: 'ada')
+      other = create_test_version(whodunnit: 'grace')
+
+      ids = VersionService.for_model('User', whodunnit: 'ada').map(&:id)
+
+      assert_equal [wanted.id], ids & [wanted.id, other.id]
     end
 
-    test 'returns versions for specific record' do
-      versions = VersionService.for_record('User', 123)
-      assert_respond_to versions, :where
+    test 'keeps only the versions inside the date range' do
+      wanted = create_test_version(created_at: 2.days.ago)
+      other = create_test_version(created_at: 20.days.ago)
+
+      ids = VersionService.for_model('User', from_date: 5.days.ago.to_date.to_s).map(&:id)
+
+      assert_equal [wanted.id], ids & [wanted.id, other.id]
     end
 
-    test 'returns unique whodunnits' do
-      whodunnits = VersionService.unique_whodunnits
-      assert_kind_of Array, whodunnits
+    test 'keeps only the versions whose stored data contain the search text' do
+      wanted = create_test_version(object_changes: { name: %w[old needle] }.to_yaml)
+      other = create_test_version(object_changes: { name: %w[old haystack] }.to_yaml)
+
+      ids = VersionService.for_model('User', search: 'needle').map(&:id)
+
+      assert_equal [wanted.id], ids & [wanted.id, other.id]
     end
 
-    test 'returns available events' do
-      events = VersionService.available_events
-      assert_kind_of Array, events
+    test 'gives the versions of the named record' do
+      wanted = create_test_version(item_id: 123)
+      other = create_test_version(item_id: 456)
+
+      ids = VersionService.for_record('User', 123).map(&:id)
+
+      assert_equal [wanted.id], ids & [wanted.id, other.id]
+    end
+
+    test 'gives the people that appear in the versions' do
+      create_test_version(whodunnit: 'ada')
+
+      assert_includes VersionService.unique_whodunnits, 'ada'
+    end
+
+    test 'gives the events that appear in the versions' do
+      create_test_version(event: 'destroy')
+
+      assert_includes VersionService.available_events, 'destroy'
     end
 
     test 'restore_version returns error for non-existent version' do

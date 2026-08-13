@@ -99,16 +99,28 @@ module PaperTrailHistory
       assert_not decorator.can_restore?
     end
 
-    test 'returns changed attributes' do
-      changes = @decorator.changed_attributes
-      assert_kind_of Array, changes
+    test 'names the attribute that changed' do
+      change = @decorator.changed_attributes.first
 
-      if changes.any?
-        change = changes.first
-        assert change.key?(:attribute)
-        assert change.key?(:old_value)
-        assert change.key?(:new_value)
-      end
+      assert_equal 'name', change[:attribute]
+    end
+
+    test 'gives the value before the change' do
+      change = @decorator.changed_attributes.first
+
+      assert_equal 'old_name', change[:old_value]
+    end
+
+    test 'gives the value after the change' do
+      change = @decorator.changed_attributes.first
+
+      assert_equal 'new_name', change[:new_value]
+    end
+
+    test 'gives no change for a version without a changeset' do
+      version = create_test_version(object_changes: nil)
+
+      assert_empty VersionDecorator.new(version).changed_attributes
     end
 
     test 'hides the old value of an attribute that the host application filters' do
@@ -130,10 +142,17 @@ module PaperTrailHistory
       assert_equal 'new_name', change[:new_value]
     end
 
-    test 'returns item display name' do
-      display_name = @decorator.item_display_name
-      assert_kind_of String, display_name
-      assert display_name.present?
+    test 'names the item by its type and id when the record is gone' do
+      version = create_test_version(item_id: 999_999)
+
+      assert_equal 'User #999999 (deleted)', VersionDecorator.new(version).item_display_name
+    end
+
+    test 'names the item by its name when the record exists' do
+      user = User.create!(name: 'Ada Lovelace', email: "vd-#{SecureRandom.hex(4)}@example.com")
+      version = create_test_version(item_id: user.id)
+
+      assert_equal 'Ada Lovelace', VersionDecorator.new(version).item_display_name
     end
 
     private

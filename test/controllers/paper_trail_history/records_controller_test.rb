@@ -32,6 +32,31 @@ module PaperTrailHistory
       assert_match 'Ada Lovelace', response.body
     end
 
+    test 'shows the version list of the record' do
+      @user.update!(name: 'Ada L.')
+
+      get "/paper_trail_history/models/User/records/#{@user.id}/versions"
+
+      assert_select 'tbody tr', count: @user.versions.count
+    end
+
+    test 'shows only the versions with the event of the URL' do
+      @user.update!(name: 'Ada L.')
+
+      get "/paper_trail_history/models/User/records/#{@user.id}/versions", params: { event: 'create' }
+
+      assert_select 'tbody tr', count: 1
+    end
+
+    test 'shows the version list for a record that is deleted' do
+      id = @user.id
+      @user.destroy!
+
+      get "/paper_trail_history/models/User/records/#{id}/versions"
+
+      assert_response :success
+    end
+
     test 'redirects for a model that is not trackable' do
       get "/paper_trail_history/models/NoSuchModel/records/#{@user.id}"
 

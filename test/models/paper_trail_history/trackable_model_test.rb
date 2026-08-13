@@ -50,60 +50,41 @@ module PaperTrailHistory
       end
     end
 
-    test 'finds all trackable models' do
-      trackable_models = TrackableModel.all
-      assert_kind_of Array, trackable_models
-      assert(trackable_models.all? { |model| model.is_a?(TrackableModel) })
+    test 'finds every model of the dummy application that uses PaperTrail' do
+      assert_equal %w[Admin Comment Post Product User], TrackableModel.all.map(&:name)
     end
 
-    test 'finds specific model by name' do
-      trackable_models = TrackableModel.all
-      return if trackable_models.empty?
-
-      first_model = trackable_models.first
-      found_model = TrackableModel.find(first_model.name)
-
-      assert_not_nil found_model
-      assert_equal first_model.name, found_model.name
+    test 'finds a model by name' do
+      assert_equal 'User', TrackableModel.find('User').name
     end
 
-    test 'returns nil for non-existent model' do
-      found_model = TrackableModel.find('NonExistentModel')
-      assert_nil found_model
+    test 'gives nil for a model that does not exist' do
+      assert_nil TrackableModel.find('NonExistentModel')
     end
 
-    test 'returns versions for model' do
-      trackable_models = TrackableModel.all
-      return if trackable_models.empty?
+    test 'gives the versions of the model' do
+      user = User.create!(name: 'Ada', email: "tm-#{SecureRandom.hex(4)}@example.com")
 
-      model = trackable_models.first
-      versions = model.versions
-
-      assert_respond_to versions, :where
-      # versions should be a relation that includes the model's item_type
-      assert_includes versions.to_sql, model.item_type_for_versions
+      assert_includes TrackableModel.find('User').versions.map(&:item_id), user.id
     end
 
-    test 'returns human name' do
-      trackable_models = TrackableModel.all
-      return if trackable_models.empty?
+    test 'gives no version of another model' do
+      author = User.create!(name: 'Ada', email: "tm-#{SecureRandom.hex(4)}@example.com")
+      Post.create!(title: 'Hello', content: 'World', user: author)
 
-      model = trackable_models.first
-      human_name = model.human_name
-
-      assert_kind_of String, human_name
-      assert human_name.present?
+      assert_equal ['Post'], TrackableModel.find('Post').versions.map(&:item_type).uniq
     end
 
-    test 'returns table name' do
-      trackable_models = TrackableModel.all
-      return if trackable_models.empty?
+    test 'gives the human name of the model in plural' do
+      assert_equal User.model_name.human(count: 2), TrackableModel.find('User').human_name
+    end
 
-      model = trackable_models.first
-      table_name = model.table_name
+    test 'gives the table name of the model' do
+      assert_equal 'users', TrackableModel.find('User').table_name
+    end
 
-      assert_kind_of String, table_name
-      assert table_name.present?
+    test 'gives the version table of a model with its own version class' do
+      assert_equal 'product_versions', TrackableModel.find('Product').version_table_name
     end
   end
 end
