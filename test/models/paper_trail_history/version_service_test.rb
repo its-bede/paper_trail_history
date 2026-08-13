@@ -95,7 +95,37 @@ module PaperTrailHistory
       assert_nil found
     end
 
+    test 'restores the given version and not another version with the same id' do
+      product_version = colliding_product_version
+
+      result = VersionService.restore_version(product_version)
+
+      assert result[:success]
+    end
+
+    test 'restores the values of the given version and not of another version with the same id' do
+      product_version = colliding_product_version
+
+      VersionService.restore_version(product_version)
+
+      assert_equal 'Original', product_version.item.reload.name
+    end
+
     private
+
+    # Makes an update version of a product, and a create version of a user that
+    # has the same ID in the other version table. A restore that searches by ID
+    # alone finds the user version first and refuses the restore.
+    def colliding_product_version
+      product = Product.create!(name: 'Original', price: 10, sku: "SKU-#{SecureRandom.hex(4)}")
+      product.update!(name: 'Changed')
+      product_version = product.versions.last
+
+      PaperTrail::Version.where(id: product_version.id).delete_all
+      create_test_version(id: product_version.id, event: 'create')
+
+      product_version
+    end
 
     def create_test_version(attributes = {})
       PaperTrail::Version.create!({

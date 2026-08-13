@@ -12,7 +12,7 @@ module PaperTrailHistory
     end
 
     def restore
-      result = VersionService.restore_version(@version.id)
+      result = VersionService.restore_version(@version)
 
       if result[:success]
         redirect_back_or_to(version_path(@version, model_name: @version.item_type), notice: result[:message])

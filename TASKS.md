@@ -9,7 +9,7 @@ The text uses ASD-STE100 Simplified Technical English.
 > and RuboCop found no offense. Thus no finding in this list comes from a test
 > that fails now.
 
-**Highest priority:** S1 (done), R1, P1, S2.
+**Highest priority:** S1 (done), R1 (done), R9, P1, S2.
 
 ---
 
@@ -82,7 +82,7 @@ input keeps the `%` and `_` wildcards. A search for `%` reads all rows.
 
 ## 2. Robustness and Correctness
 
-### R1 - Restore uses the wrong version record - **Critical**
+### R1 - Restore uses the wrong version record - **Critical** - DONE (0.3.0)
 
 `app/controllers/paper_trail_history/versions_controller.rb:14` →
 `app/models/paper_trail_history/version_service.rb:35`
@@ -93,7 +93,7 @@ The controller finds the version with `model_name`. Then
 (the dummy app has `versions` and `product_versions`), two rows can have the same
 ID. The service can restore a different record than the one on the screen.
 
-- [ ] Give the version object to `restore_version`. Do not search a second time.
+- [x] Give the version object to `restore_version`. Do not search a second time.
 
 ### R2 - Invalid date parameters cause an error page - **High**
 
@@ -165,6 +165,29 @@ holds memory. The memoization is also not thread-safe.
 memory. It does not show the new values.
 
 - [ ] Reload the item, or give back the object from `reify`.
+
+### R9 - Make the restore work with the YAML rules of Rails - **High**
+
+`README.md`, `app/models/paper_trail_history/version_service.rb:35`
+
+Found while the team did R1. PaperTrail keeps the previous state of a record as
+YAML. From Rails 7.1, Rails loads only a small set of classes from a YAML column.
+`ActiveSupport::TimeWithZone` is not in this set. Each model with `created_at`
+and `updated_at` thus fails at `reify` with the message
+`Tried to load unspecified class: ActiveSupport::TimeWithZone`. The restore
+function is the main function of this gem, and it does not work in a new Rails
+application with the default settings.
+
+The test suite did not find this, because the test `should restore version`
+replaces `VersionService.restore_version` with a stub. No test did a real
+restore. See T1.
+
+The dummy application now sets `yaml_column_permitted_classes` (commit for R1).
+The gem must also help the user of the gem:
+
+- [ ] Write the necessary `config.active_record.yaml_column_permitted_classes` in the README.
+- [ ] Catch `Psych::DisallowedClass` and give a message that tells the user what to configure.
+- [ ] Add a test with a real restore of a model that has timestamps.
 
 ---
 

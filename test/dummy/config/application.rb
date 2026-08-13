@@ -20,6 +20,14 @@ module Dummy
     # Common ones are `templates`, `generators`, or `middleware`, for example.
     config.autoload_lib(ignore: %w[assets tasks])
 
+    # PaperTrail stores the previous state of a record as YAML. Rails loads only
+    # a small set of classes from a YAML column, thus a host application has to
+    # permit the types that its models use. Without this, every reify of a record
+    # with timestamps fails with "Tried to load unspecified class".
+    config.active_record.yaml_column_permitted_classes = [
+      Symbol, Date, Time, ActiveSupport::TimeWithZone, ActiveSupport::TimeZone, BigDecimal
+    ]
+
     # Configuration for the application, engines, and railties goes here.
     #
     # These settings can be overridden in specific environments using the files

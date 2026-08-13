@@ -17,8 +17,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Separate restore authorization**: `authorize_restore_with` gates the destructive `restore` action independently from read access, so teams can grant read-only history access
 - **Security documentation**: New README section covering the threat model, both configuration styles and route-level protection
 
+### Fixed
+- **Restore could modify the wrong record**: `VersionService.restore_version` now accepts the version record itself instead of only an ID. In applications with more than one version table (PaperTrail's `versions` plus a custom class such as `ProductVersion`), the same ID can exist in each table. The controller resolved the version correctly using `model_name` and then discarded it, so the restore searched by ID again and could act on a completely different record. Passing an ID still works for backwards compatibility, but is ambiguous in multi-table setups.
+
 ### Changed
 - `PaperTrailHistory::ApplicationController` now declares its layout explicitly, so inheriting from a host controller that declares its own layout no longer changes how engine views render
+- The dummy application configures `yaml_column_permitted_classes`, which a host application needs before PaperTrail can deserialize a record with timestamps
 
 ### Upgrading from 0.2.x
 Add `config/initializers/paper_trail_history.rb` and set either `parent_controller` or `authenticate_with` before deploying. If another layer already protects the mount point, set `allow_unauthenticated_access = true` instead. See the Security section of the README.

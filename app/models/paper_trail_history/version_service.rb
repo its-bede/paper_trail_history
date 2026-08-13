@@ -32,8 +32,18 @@ module PaperTrailHistory
       end
     end
 
-    def self.restore_version(version_id)
-      version = find_version_across_tables(version_id)
+    # Restores a record to the state of the given version.
+    #
+    # Give the version record itself whenever you have it. An ID alone is not
+    # unique: an application with more than one version table (PaperTrail's
+    # +versions+ plus a custom class such as +ProductVersion+) can hold the same
+    # ID in each table, and a search by ID finds whichever table comes first.
+    #
+    # @param version [ActiveRecord::Base, Integer, String] the version record, or
+    #   its ID for backwards compatibility
+    # @return [Hash] +:success+, and either +:item+ and +:message+ or +:error+
+    def self.restore_version(version)
+      version = find_version_across_tables(version) unless version.is_a?(ActiveRecord::Base)
       return validate_version_for_restore(version) unless version_restorable?(version)
 
       perform_version_restore(version)

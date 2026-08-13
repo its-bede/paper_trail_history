@@ -106,6 +106,18 @@ module PaperTrailHistory
       assert_select '.alert-danger'
     end
 
+    test 'restores the version of the model that the request names' do
+      product = Product.create!(name: 'Original', price: 10, sku: "SKU-#{SecureRandom.hex(4)}")
+      product.update!(name: 'Changed')
+      product_version = product.versions.last
+      PaperTrail::Version.where(id: product_version.id).delete_all
+      create_test_version(id: product_version.id, event: 'create')
+
+      patch restore_version_url(product_version.id, model_name: 'Product')
+
+      assert_equal 'Original', product.reload.name
+    end
+
     private
 
     def create_test_version(attributes = {})
