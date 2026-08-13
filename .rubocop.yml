@@ -89,3 +89,9 @@ Style/Documentation:
 # https://www.rubydoc.info/gems/rubocop/RuboCop/Cop/Style/ClassAndModuleChildren
 Style/ClassAndModuleChildren:
   Enabled: false
+
+# The documentation tasks only read source files. They must not load the dummy
+# application, thus they do not depend on the :environment task.
+Rails/RakeEnvironment:
+  Exclude:
+    - Rakefile

@@ -106,6 +106,7 @@ module PaperTrailHistory
     # @return [Boolean]
     attr_accessor :allow_unauthenticated_access
 
+    # Makes a configuration with the default values.
     def initialize
       @parent_controller = DEFAULT_PARENT_CONTROLLER
       @authenticate_with = nil

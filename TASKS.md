@@ -10,8 +10,8 @@ The text uses ASD-STE100 Simplified Technical English.
 > that fails now.
 
 **Highest priority:** S1, R1, R9, S2, P1, R2, D2, P2, P3, R4 - all done.
-Next: D1 (YARD), P6, then the small ones R7, R8, P5, Q1, Q2, Q3 and the test
-tasks T1 to T5.
+Next: T1 (the tests that test nothing), P6, then the small ones R7, R8, P5,
+Q1, Q2, Q3 and the test tasks T2 to T5.
 
 ---
 
@@ -403,18 +403,28 @@ working directory. `.gitignore` does not have them.
 
 ## 5. Documentation (YARD)
 
-### D1 - Add YARD documentation to the public API - **Medium**
+### D1 - Add YARD documentation to the public API - **Medium** - DONE (0.3.0)
 
 No file has a YARD tag. There is no `@param`, no `@return`, no `@raise` and no
 `@example`. There is no `.yardopts` file, no `yard` development dependency and no
 doc task.
 
-- [ ] Add `yard` to the Gemfile as a development dependency.
-- [ ] Add a `.yardopts` file.
-- [ ] Document each public method of `VersionService`, `TrackableModel`, `VersionDecorator` and `ApplicationHelper`.
-- [ ] Add `@example` to the restore methods.
-- [ ] Add `@api private` to internal methods.
-- [ ] Add a `yard` task and a documentation check to the CI.
+- [x] Add `yard` to the Gemfile as a development dependency.
+- [x] Add a `.yardopts` file.
+- [x] Document each public method of `VersionService`, `TrackableModel`, `VersionDecorator` and `ApplicationHelper`.
+- [x] Add `@example` to the restore methods.
+- [x] Add `@api private` to internal methods.
+- [x] Add a `yard` task and a documentation check to the CI.
+
+The task `rake yard:coverage` fails when a public object has no documentation.
+CI runs it.
+
+**Warning for anyone who changes the coverage task:** YARD gives each method
+whose name ends with a question mark an automatic `@return [Boolean]` tag. Thus
+`docstring.blank?` and `docstring.present?` say that such a method is documented,
+also when it has no comment at all. The task reads `docstring.all` instead. The
+first version of the task used `present?` and reported 100 percent while three
+predicate methods had no documentation.
 
 ### D2 - Correct the version numbers in the documents - **High** - DONE (0.3.0)
 

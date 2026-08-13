@@ -331,6 +331,22 @@ bundle exec rake test TESTOPTS="-v"
 bundle exec rubocop
 ```
 
+### API Documentation
+
+The public API is documented with YARD. CI fails if a public object loses its
+documentation, so new API needs a docstring to merge.
+
+```bash
+# Generate HTML docs into doc/
+bundle exec rake yard
+
+# List anything public that is undocumented (this is what CI runs)
+bundle exec rake yard:coverage
+```
+
+Internal helpers are tagged `@api private` and are excluded from both the
+generated docs and the coverage gate.
+
 ### Testing Different Components
 
 ```bash

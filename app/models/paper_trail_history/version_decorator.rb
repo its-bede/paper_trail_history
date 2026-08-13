@@ -1,32 +1,81 @@
 # frozen_string_literal: true
 
 module PaperTrailHistory
-  # Decorator for PaperTrail::Version objects providing formatted display methods
+  # Prepares one PaperTrail version for the interface: translated labels, dates
+  # in the format of the current language, and a list of changed attributes that
+  # hides the values which the host application filters.
+  #
+  # The decorator passes the usual reader methods of a version through, thus it
+  # can stand in the place of the version itself in a view.
+  #
+  # @example
+  #   decorated = PaperTrailHistory::VersionDecorator.decorate(version)
+  #   decorated.event_label    # => "Updated"
+  #   decorated.changed_attributes
+  #   # => [{ attribute: 'name', old_value: 'old', new_value: 'new' }]
   class VersionDecorator
+    # @return [ActiveRecord::Base] the version that this object decorates
     attr_reader :version
 
-    # Delegate common version methods to the underlying version object
+    # @!method id
+    #   @return [Integer]
+    # @!method event
+    #   @return [String] +'create'+, +'update'+ or +'destroy'+
+    # @!method item_type
+    #   @return [String]
+    # @!method item_id
+    #   @return [Integer]
+    # @!method whodunnit
+    #   @return [String, nil]
+    # @!method object
+    #   @return [String, nil] the state before the change, as YAML
+    # @!method object_changes
+    #   @return [String, nil] the change, as YAML
+    # @!method created_at
+    #   @return [ActiveSupport::TimeWithZone]
+    # @!method updated_at
+    #   @return [ActiveSupport::TimeWithZone, nil]
+    # @!method item
+    #   @return [ActiveRecord::Base, nil] nil when the record is deleted
+    # @!method changeset
+    #   @return [Hash] attribute name to a pair of old and new value
     delegate :id, :event, :item_type, :item_id, :whodunnit, :object, :object_changes,
              :created_at, :updated_at, :item, :changeset, to: :version
 
+    # @param version [ActiveRecord::Base] a PaperTrail version
     def initialize(version)
       @version = version
     end
 
+    # Decorates a version. A version that is already decorated stays as it is.
+    #
+    # @param version [ActiveRecord::Base, VersionDecorator]
+    # @return [VersionDecorator]
     def self.decorate(version)
       return version if version.is_a?(VersionDecorator)
 
       new(version)
     end
 
+    # Decorates each version of a collection.
+    #
+    # @param versions [Enumerable]
+    # @return [Array<VersionDecorator>]
     def self.decorate_collection(versions)
       versions.map { |version| decorate(version) }
     end
 
+    # The time of the version in the format of the current language.
+    #
+    # @return [String]
     def formatted_created_at
       format_time(version.created_at)
     end
 
+    # The name of the event in the current language.
+    #
+    # @return [String] the translated name, or the event itself for an event
+    #   that this engine does not know
     def event_label
       case version.event
       when 'create'
@@ -40,6 +89,9 @@ module PaperTrailHistory
       end
     end
 
+    # The Bootstrap suffix for the colour of the event.
+    #
+    # @return [String] +'success'+, +'warning'+, +'danger'+ or +'info'+
     def event_class
       case version.event
       when 'create'
@@ -53,10 +105,21 @@ module PaperTrailHistory
       end
     end
 
+    # The person who made the change.
+    #
+    # @return [String] the whodunnit value, or the word for the system when
+    #   PaperTrail stored no value
     def whodunnit_display
       version.whodunnit || I18n.t('paper_trail_history.actors.system')
     end
 
+    # The attributes that this version changed.
+    #
+    # An attribute that the host application filters gets a placeholder for both
+    # values, thus a password digest or an API token does not appear.
+    #
+    # @return [Array<Hash>] each entry has +:attribute+, +:old_value+ and
+    #   +:new_value+
     def changed_attributes
       return [] unless changeset
 
@@ -65,10 +128,19 @@ module PaperTrailHistory
       end
     end
 
+    # Tells if the engine can restore this version.
+    #
+    # @return [Boolean] false for the version that created the record
     def can_restore?
       version.event != 'create'
     end
 
+    # A name for the record of this version.
+    #
+    # The method takes the name or the title of the record when it has one, and
+    # falls back to the type and the ID.
+    #
+    # @return [String]
     def item_display_name
       return deleted_item_name unless version.item
 

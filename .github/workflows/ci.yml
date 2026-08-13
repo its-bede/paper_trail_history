@@ -21,6 +21,9 @@ jobs:
     - name: Run RuboCop
       run: bundle exec rubocop
 
+    - name: Check that the public API is documented
+      run: bundle exec rake yard:coverage
+
   test:
     runs-on: ubuntu-latest
     strategy:
