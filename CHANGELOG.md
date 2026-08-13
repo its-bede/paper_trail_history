@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-08-13
+
+### Security
+- **BREAKING**: The engine now refuses requests with `403 Forbidden` when the host application has not configured access control. Previously, mounting the engine exposed the complete audit trail and the record-restoring `restore` endpoint to anyone who knew the mount path, because `PaperTrailHistory::ApplicationController` inherits from `ActionController::Base` and therefore never ran the host application's `before_action` filters. Development and test environments remain open and log a warning instead, so the dummy app and existing test suites keep working.
+
+### Added
+- **Configuration API**: `PaperTrailHistory.configure` with `parent_controller`, `authenticate_with`, `authorize_restore_with` and `allow_unauthenticated_access`
+- **Separate restore authorization**: `authorize_restore_with` gates the destructive `restore` action independently from read access, so teams can grant read-only history access
+- **Security documentation**: New README section covering the threat model, both configuration styles and route-level protection
+
+### Changed
+- `PaperTrailHistory::ApplicationController` now declares its layout explicitly, so inheriting from a host controller that declares its own layout no longer changes how engine views render
+
+### Upgrading from 0.2.x
+Add `config/initializers/paper_trail_history.rb` and set either `parent_controller` or `authenticate_with` before deploying. If another layer already protects the mount point, set `allow_unauthenticated_access = true` instead. See the Security section of the README.
+
 ## [0.2.1] - 2025-12-16
 
 ### Fixed

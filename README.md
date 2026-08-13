@@ -34,6 +34,73 @@ Rails.application.routes.draw do
 end
 ```
 
+Then configure access control - **mounting alone is not enough**, see below.
+
+## Security
+
+> [!IMPORTANT]
+> This engine has **no authentication of its own**. It exposes the complete audit
+> trail of every versioned model - including historical values of attributes that
+> may since have been changed or redacted - and it exposes a `PATCH` endpoint that
+> overwrites live records. Treat the mount point like an admin console.
+
+`PaperTrailHistory::ApplicationController` does **not** inherit from your
+application's `ApplicationController`, so none of your `before_action` filters run
+inside the engine. You have to grant access explicitly.
+
+Since 0.3.0 the engine **refuses every request with `403 Forbidden` unless you
+configure it**. Development and test environments stay open (with a log warning) so
+that the dummy app and your test suite keep working without an initializer.
+
+### Configuration
+
+Create `config/initializers/paper_trail_history.rb`:
+
+```ruby
+PaperTrailHistory.configure do |config|
+  # Option A: inherit from a controller that already authenticates.
+  # The engine keeps its own layout, only the filters are inherited.
+  config.parent_controller = 'Admin::BaseController'
+
+  # Option B: run your own filter. Executed via instance_exec in the controller,
+  # so current_user, session, redirect_to, head and main_app.* are all available.
+  config.authenticate_with = -> { redirect_to main_app.root_path unless current_user&.admin? }
+
+  # Optional: a separate gate for the destructive restore action.
+  # This one is a PREDICATE - return true to allow, false to deny.
+  # If unset, anyone who passes authentication may restore.
+  config.authorize_restore_with = -> { current_user.owner? }
+end
+```
+
+Either `parent_controller` or `authenticate_with` satisfies the check; you can use
+both. Note the asymmetry: `authenticate_with` is a **filter** (halt the chain
+yourself with `redirect_to`/`head`, which lets you pass Devise's
+`authenticate_user!` straight in), while `authorize_restore_with` is a
+**predicate** that returns a boolean.
+
+`parent_controller` is read once, when Rails first loads the engine controller.
+Set it in an initializer - changing it at runtime has no effect.
+
+### Route-level protection
+
+Configuration composes with a route constraint, and using both is a good idea:
+
+```ruby
+authenticate :user, ->(user) { user.admin? } do
+  mount PaperTrailHistory::Engine, at: '/revisions'
+end
+```
+
+### Running without authentication
+
+If a different layer protects the mount point (a VPN, a reverse proxy, an
+IP allowlist), opt out explicitly:
+
+```ruby
+config.allow_unauthenticated_access = true
+```
+
 ## Prerequisites
 
 This engine requires:

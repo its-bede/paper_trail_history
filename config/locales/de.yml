@@ -1,6 +1,8 @@
 de:
   paper_trail_history:
     errors:
+      access_not_configured: "PaperTrailHistory ist nicht konfiguriert. Die Host-Anwendung muss config.authenticate_with oder config.parent_controller in einem Initializer setzen, bevor diese Oberfläche verfügbar ist."
+      restore_not_allowed: "Sie dürfen diese Version nicht wiederherstellen"
       version_not_found: "Version nicht gefunden"
       model_not_found: "Modell '%{model_name}' nicht gefunden oder nicht verfolgbar"
       restore_failed: "Wiederherstellung fehlgeschlagen: %{error}"

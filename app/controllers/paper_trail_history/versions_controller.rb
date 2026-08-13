@@ -3,6 +3,7 @@
 module PaperTrailHistory
   # Controller for managing version operations like viewing and restoring specific versions
   class VersionsController < ApplicationController
+    before_action :authorize_restore, only: :restore
     before_action :find_version, only: %i[show restore]
 
     def show
