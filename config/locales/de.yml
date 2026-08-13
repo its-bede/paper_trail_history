@@ -19,3 +19,5 @@ de:
       system: "System"
     display:
       filtered: "[GEFILTERT]"
+    confirmations:
+      restore_version: "Diese Version wiederherstellen? Dies überschreibt die aktuellen Daten des Datensatzes. Die Änderung erzeugt eine neue Version."

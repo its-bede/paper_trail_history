@@ -19,3 +19,5 @@ en:
       system: "System"
     display:
       filtered: "[FILTERED]"
+    confirmations:
+      restore_version: "Restore this version? This overwrites the current data of the record. The change creates a new version."

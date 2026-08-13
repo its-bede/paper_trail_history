@@ -10,7 +10,7 @@ The text uses ASD-STE100 Simplified Technical English.
 > that fails now.
 
 **Highest priority:** S1, R1, R9, S2, P1, R2, D2, P2, P3, R4 - all done.
-Next: R3, R5, R6 (robustness), then Q5 (localize the views) and D1 (YARD).
+Next: R3, R6 (robustness), then Q5 (localize the views) and D1 (YARD).
 
 ---
 
@@ -134,7 +134,7 @@ column, thus the test suite covers both paths. A version table without
 `item_subtype` cannot separate the subclasses, and a subclass then shows the
 versions of its base class. The README describes this.
 
-### R5 - Make the confirmation dialog work - **Medium**
+### R5 - Make the confirmation dialog work - **Medium** - DONE (0.3.0)
 
 `app/views/paper_trail_history/shared/_versions_table.html.erb:49`,
 `app/views/paper_trail_history/versions/show.html.erb:16,74`
@@ -143,8 +143,19 @@ The restore buttons use `data: { confirm: … }`. The engine layout loads only
 Bootstrap. It does not load Turbo or rails-ujs. Thus no dialog opens. One click
 restores the record immediately.
 
-- [ ] Load Turbo, or use `data: { turbo_confirm: … }`, or add your own JavaScript.
-- [ ] Test the dialog.
+- [x] Add your own JavaScript. The engine does not load Turbo.
+- [x] Test the dialog.
+
+The engine uses its own `data-pth-confirm` attribute and a handler in the
+layout. Turbo was not the choice, because Turbo Drive would also take over each
+link of the engine, and it would come from a second CDN (see S3). The own
+attribute also prevents a second dialog in a host application that loads Turbo.
+
+The integration tests check the markup and the handler. They cannot run
+JavaScript. The dialog itself was tested with a browser: a click opens the
+dialog, "Cancel" keeps the record, and "OK" restores it.
+
+**This makes S4 larger.** The handler is one more inline script without a nonce.
 
 ### R6 - Clear the class caches at code reload - **Medium**
 
@@ -348,12 +359,12 @@ are not in the locale files.
 
 - [ ] Remove the comment.
 
-### Q7 - Remove the build artifacts - **Low**
+### Q7 - Remove the build artifacts - **Low** - PART DONE
 
 `paper_trail_history-0.2.0.gem` and `paper_trail_history-0.2.1.gem` are in the
 working directory. `.gitignore` does not have them.
 
-- [ ] Add `*.gem` to `.gitignore`.
+- [x] Add `*.gem` to `.gitignore`. The `.gitignore` also ignores the artifacts of the browser automation now.
 - [ ] Think about the removal of `Gemfile.lock` from Git, because this project is a gem.
 
 ---

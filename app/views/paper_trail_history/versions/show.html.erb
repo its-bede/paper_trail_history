@@ -13,9 +13,7 @@
       <%= button_to "Restore This Version",
           restore_version_link_path(@version),
           method: :patch,
-          data: {
-            confirm: "Are you sure you want to restore this version? This will overwrite the current data."
-          },
+          form: { data: { pth_confirm: t("paper_trail_history.confirmations.restore_version") } },
           class: "btn btn-warning" %>
     <% end %>
     <%= link_to "View Record", model_record_path(@trackable_model.name, @version.item_id), class: "btn btn-outline-primary" %>
@@ -71,9 +69,7 @@
           <%= button_to "Restore This Version",
               restore_version_link_path(@version),
               method: :patch,
-              data: {
-                confirm: "Are you sure you want to restore this version? This will overwrite the current data and cannot be undone."
-              },
+              form: { data: { pth_confirm: t("paper_trail_history.confirmations.restore_version") } },
               class: "btn btn-warning" %>
         </div>
       </div>
