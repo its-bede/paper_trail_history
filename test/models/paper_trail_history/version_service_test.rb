@@ -196,6 +196,24 @@ module PaperTrailHistory
       assert_not_includes versions.map(&:id), recent_version.id
     end
 
+    test 'gives back the record with the restored values' do
+      user = changed_user
+
+      result = VersionService.restore_version(user.versions.last)
+
+      assert_equal 'Original', result[:item].name
+    end
+
+    test 'gives back the restored values also when the item was read before the restore' do
+      user = changed_user
+      version = user.versions.last
+      version.item # loads and keeps the record as it is now
+
+      result = VersionService.restore_version(version)
+
+      assert_equal 'Original', result[:item].name
+    end
+
     test 'restores a record that has timestamps to the values of the previous version' do
       user = changed_user
 

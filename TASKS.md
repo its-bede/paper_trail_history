@@ -192,22 +192,34 @@ Note for the tests: Rails puts the `to_prepare` blocks on
 `Rails.application.reloader`, not on `ActiveSupport::Reloader`. A test must call
 `Rails.application.reloader.prepare!`.
 
-### R7 - Use the primary key of the model - **Low**
+### R7 - Use the primary key of the model - **Low** - DONE (0.3.0)
 
 `app/controllers/paper_trail_history/records_controller.rb:35`
 
 `find_by(id: …)` does not work for a model with a different primary key.
 
-- [ ] Use `klass.find_by(klass.primary_key => params[:record_id])`.
+- [x] Use `klass.find_by(klass.primary_key => params[:record_id])`.
 
-### R8 - Give back the correct record after a restore - **Low**
+The dummy application has a `Document` model with a UUID primary key. Without
+the repair the page fails with `no such column: documents.id`.
+
+**Found while testing:** the version list of such a model stays empty, because
+PaperTrail declares `item_id` as `bigint` and a UUID becomes `0` in that column.
+This belongs to the versions table of the host application, not to the engine.
+The README says it.
+
+### R8 - Give back the correct record after a restore - **Low** - NOT A FAULT
 
 `app/models/paper_trail_history/version_service.rb:167`
 
-`restore_previous_version` gives `version.item`. This object is the old object in
-memory. It does not show the new values.
+`restore_previous_version` gives `version.item`.
 
-- [ ] Reload the item, or give back the object from `reify`.
+**Correction of this review.** The finding is wrong. PaperTrail builds the object
+of `reify` from `version.item` itself (see `init_model` in `reifier.rb`), thus
+`reify` gives back the same object and `save!` writes it. `version.item` shows
+the restored values, also when the caller read the item before the restore.
+
+- [x] Two tests now hold this behaviour, thus a later change cannot break it without notice.
 
 ### R9 - Make the restore work with the YAML rules of Rails - **High** - DONE (0.3.0)
 

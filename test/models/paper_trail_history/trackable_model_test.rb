@@ -51,7 +51,7 @@ module PaperTrailHistory
     end
 
     test 'finds every model of the dummy application that uses PaperTrail' do
-      assert_equal %w[Admin Comment Post Product User], TrackableModel.all.map(&:name)
+      assert_equal %w[Admin Comment Document Post Product User], TrackableModel.all.map(&:name)
     end
 
     test 'finds a model by name' do

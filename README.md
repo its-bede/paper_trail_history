@@ -99,6 +99,17 @@ config.assets = {
 > session yet. Prefer something that always yields a value, e.g.
 > `->(_request) { SecureRandom.base64(16) }`.
 
+### Models with a non-integer primary key
+
+The engine looks records up by the model's own primary key, so a model using a
+UUID or any other custom key works.
+
+> [!NOTE]
+> PaperTrail's generated `versions` table declares `item_id` as `bigint`. A UUID
+> written into that column becomes `0`, and the version history for such a model
+> stays empty. This is a property of your versions table, not of this engine - if
+> you version models with non-integer keys, `item_id` has to be a string column.
+
 ### Single table inheritance
 
 PaperTrail records the **base class** name in `item_type`, so a version created

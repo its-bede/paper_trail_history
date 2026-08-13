@@ -57,6 +57,27 @@ module PaperTrailHistory
       assert_response :success
     end
 
+    test 'finds a record of a model whose primary key is not id' do
+      document = Document.create!(uuid: SecureRandom.uuid, title: 'Contract')
+
+      get "/paper_trail_history/models/Document/records/#{document.uuid}"
+
+      assert_select 'dd', text: 'Contract'
+    end
+
+    # The version list stays empty here, because the versions table of the dummy
+    # application keeps item_id as bigint and PaperTrail writes the UUID as 0.
+    # A host application with such a model needs a string item_id column. The
+    # page must work in any case.
+    test 'shows the version page of a record whose primary key is not id' do
+      document = Document.create!(uuid: SecureRandom.uuid, title: 'Contract')
+      document.update!(title: 'Contract v2')
+
+      get "/paper_trail_history/models/Document/records/#{document.uuid}/versions"
+
+      assert_response :success
+    end
+
     test 'redirects for a model that is not trackable' do
       get "/paper_trail_history/models/NoSuchModel/records/#{@user.id}"
 

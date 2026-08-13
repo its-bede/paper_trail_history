@@ -32,7 +32,10 @@ module PaperTrailHistory
     end
 
     def load_record_data
-      @record = @trackable_model.klass.find_by(id: params[:record_id])
+      klass = @trackable_model.klass
+      # PaperTrail writes the value of the primary key into item_id. A model can
+      # use a primary key that is not called id.
+      @record = klass.find_by(klass.primary_key => params[:record_id])
       @record_id = params[:record_id]
     end
 

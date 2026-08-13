@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 20250806008) do
+ActiveRecord::Schema[8.1].define(version: 20250806009) do
   create_table "comments", force: :cascade do |t|
     t.boolean "approved", default: false
     t.text "content", null: false
@@ -21,6 +21,14 @@ ActiveRecord::Schema[8.1].define(version: 20250806008) do
     t.index ["approved"], name: "index_comments_on_approved"
     t.index ["post_id"], name: "index_comments_on_post_id"
     t.index ["user_id"], name: "index_comments_on_user_id"
+  end
+
+  create_table "documents", id: false, force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.string "title"
+    t.datetime "updated_at", null: false
+    t.string "uuid", null: false
+    t.index ["uuid"], name: "index_documents_on_uuid", unique: true
   end
 
   create_table "posts", force: :cascade do |t|
