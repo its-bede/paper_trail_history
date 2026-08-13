@@ -16,3 +16,21 @@ if ActiveSupport::TestCase.respond_to?(:fixture_paths=)
   ActiveSupport::TestCase.file_fixture_path = "#{File.expand_path('fixtures', __dir__)}/files"
   ActiveSupport::TestCase.fixtures :all
 end
+
+class ActiveSupport::TestCase
+  # Collects the SQL of the block, so that a test can check the shape and the
+  # number of the queries and not only the result.
+  #
+  # @return [Array<String>]
+  def capture_sql
+    statements = []
+    subscriber = ActiveSupport::Notifications.subscribe('sql.active_record') do |*, payload|
+      statements << payload[:sql]
+    end
+    yield
+
+    statements
+  ensure
+    ActiveSupport::Notifications.unsubscribe(subscriber)
+  end
+end

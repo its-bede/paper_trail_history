@@ -9,8 +9,8 @@ The text uses ASD-STE100 Simplified Technical English.
 > and RuboCop found no offense. Thus no finding in this list comes from a test
 > that fails now.
 
-**Highest priority:** S1 (done), R1 (done), R9 (done), S2 (done), P1 (done).
-Next: P2, P3 (rest), R4.
+**Highest priority:** S1, R1, R9, S2, P1, R2, D2, P2, P3, R4 - all done.
+Next: R3, R5, R6 (robustness), then Q5 (localize the views) and D1 (YARD).
 
 ---
 
@@ -118,7 +118,7 @@ model. The view then calls `@trackable_model.human_name` and the request fails.
 
 - [ ] Check for `nil`. Redirect with a message.
 
-### R4 - Correct the behavior for STI models - **Medium**
+### R4 - Correct the behavior for STI models - **Medium** - DONE (0.3.0)
 
 `app/models/paper_trail_history/trackable_model.rb:83`
 
@@ -127,7 +127,12 @@ base class into `item_type`. Thus an STI subclass shows 0 versions and an empty
 list. The links in the version table also use `item_type` and point to the wrong
 model page.
 
-- [ ] Use `klass.base_class.name` for the query, or remove STI subclasses from the model list.
+- [x] Use `klass.base_class.name` for the query, and narrow with `item_subtype`.
+
+The dummy application now has an `Admin < User` model and an `item_subtype`
+column, thus the test suite covers both paths. A version table without
+`item_subtype` cannot separate the subclasses, and a subclass then shows the
+versions of its base class. The README describes this.
 
 ### R5 - Make the confirmation dialog work - **Medium**
 
@@ -213,7 +218,7 @@ it. The README says "Pagination support".
 The engine uses Pagy (`~> 43.0`) and `config.page_limit` (default 25). The gem
 now has a hard dependency on Pagy. See the note in the changelog.
 
-### P2 - Do not load all rows for the filter lists - **High**
+### P2 - Do not load all rows for the filter lists - **High** - DONE (0.3.0)
 
 `app/models/paper_trail_history/version_service.rb:44-70`
 
@@ -221,9 +226,11 @@ If `model_name` is `nil`, `unique_whodunnits` and `available_events` call `.all`
 on each version class. The code loads all rows into memory and then maps them in
 Ruby.
 
-- [ ] Use `distinct.pluck` on the database for each class. Then join the results.
+- [x] Use `distinct.pluck` on the database for each class. Then join the results.
 
-### P3 - Remove the N+1 queries - **High** - PART DONE
+A test reads the SQL and makes sure that no query selects full version rows.
+
+### P3 - Remove the N+1 queries - **High** - DONE (0.3.0)
 
 `app/controllers/paper_trail_history/records_controller.rb:45`,
 `app/controllers/paper_trail_history/models_controller.rb:18`,
@@ -234,7 +241,12 @@ Ruby.
 not.
 
 - [x] Add `includes(:item)` to `RecordsController#versions` (came with P1).
-- [ ] Add `includes(:item)` to `ModelsController#show` and `RecordsController#show`, which load recent versions.
+- [x] Add `includes(:item)` to `TrackableModel#recent_versions`, which `ModelsController#show` uses. The page made 20 queries and now makes 1.
+
+**Correction of the work for P1:** P1 added `includes(:item)` to
+`RecordsController#versions`. That view does not show the name of the item, thus
+the preload only cost a query. It is removed again. `RecordsController#show` has
+the same view and needs no preload.
 
 ### P4 - Remove the unnecessary COUNT query - **Low** - DONE (0.3.0)
 

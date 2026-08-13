@@ -57,9 +57,15 @@ module PaperTrailHistory
       version_class.where(item_type: item_types).group(:item_type).count
     end
 
+    # The grouped count uses item_type, thus it cannot separate the subclasses of
+    # a single table inheritance. A subclass counts its own versions.
     def self.cache_counts_for_models(models_for_class, counts, count_cache)
       models_for_class.each do |model|
-        count_cache[model.name] = counts[model.item_type_for_versions] || 0
+        count_cache[model.name] = if model.sti_subclass?
+                                    model.versions.count
+                                  else
+                                    counts[model.item_type_for_versions] || 0
+                                  end
       end
     end
 
@@ -76,14 +82,32 @@ module PaperTrailHistory
       @all_models = nil
     end
 
+    # The versions of this model.
+    #
+    # PaperTrail writes the name of the base class into item_type, thus a query
+    # by the name of a subclass finds nothing. The engine asks for the base class
+    # and narrows the result with item_subtype, which PaperTrail fills when the
+    # version table has that column. A version table without item_subtype cannot
+    # tell the subclasses apart, thus a subclass then shows the versions of its
+    # base class.
     def versions
-      version_class.where(item_type: item_type_for_versions)
+      scope = version_class.where(item_type: item_type_for_versions)
+      return scope unless sti_subclass? && item_subtype_available?
+
+      scope.where(item_subtype: klass.name)
     end
 
     def item_type_for_versions
-      # PaperTrail stores item_type as the class name, but let's be explicit
-      # and handle potential namespace issues
-      klass.name
+      klass.base_class.name
+    end
+
+    # Tells if this model is a single table inheritance subclass.
+    def sti_subclass?
+      klass != klass.base_class
+    end
+
+    def item_subtype_available?
+      version_class.column_names.include?('item_subtype')
     end
 
     def total_versions_count
@@ -91,8 +115,10 @@ module PaperTrailHistory
       @cached_version_count || versions.count
     end
 
+    # The list of recent versions shows the name of the item of each version.
+    # Without the preload, each row makes its own query.
     def recent_versions(limit = 10)
-      versions.order(created_at: :desc).limit(limit)
+      versions.includes(:item).order(created_at: :desc).limit(limit)
     end
 
     def version_class

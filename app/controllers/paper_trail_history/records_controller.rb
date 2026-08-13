@@ -43,7 +43,9 @@ module PaperTrailHistory
     end
 
     def load_versions_with_filters
-      @versions = VersionService.for_record(params[:model_name], params[:record_id], filter_params).includes(:item)
+      # No preload of :item here. This list shows the versions of one record and
+      # does not show the name of the item, thus a preload would only cost a query.
+      @versions = VersionService.for_record(params[:model_name], params[:record_id], filter_params)
       @pagy, @decorated_versions = paginate_versions(@versions)
     end
 

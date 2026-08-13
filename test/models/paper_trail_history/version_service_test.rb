@@ -95,6 +95,37 @@ module PaperTrailHistory
       assert_nil found
     end
 
+    test 'reads the whodunnit values with the database and not with Ruby' do
+      queries = capture_sql { VersionService.unique_whodunnits }
+
+      assert_not(queries.any? { |sql| sql.match?(/SELECT\s+"versions"\.\*/) })
+    end
+
+    test 'reads the event values with the database and not with Ruby' do
+      queries = capture_sql { VersionService.available_events }
+
+      assert_not(queries.any? { |sql| sql.match?(/SELECT\s+"versions"\.\*/) })
+    end
+
+    test 'gives the whodunnit values of all version tables' do
+      create_test_version(whodunnit: 'zoe')
+
+      assert_includes VersionService.unique_whodunnits, 'zoe'
+    end
+
+    test 'gives the event values of all version tables' do
+      create_test_version(event: 'destroy')
+
+      assert_includes VersionService.available_events, 'destroy'
+    end
+
+    test 'gives each whodunnit value one time' do
+      create_test_version(whodunnit: 'twin')
+      create_test_version(whodunnit: 'twin')
+
+      assert_equal 1, VersionService.unique_whodunnits.count('twin')
+    end
+
     test 'ignores a from date that is not a date' do
       versions = VersionService.for_model('User', from_date: 'not-a-date')
 

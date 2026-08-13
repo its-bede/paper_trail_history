@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 20250806006) do
+ActiveRecord::Schema[8.1].define(version: 20250806008) do
   create_table "comments", force: :cascade do |t|
     t.boolean "approved", default: false
     t.text "content", null: false
@@ -71,20 +71,24 @@ ActiveRecord::Schema[8.0].define(version: 20250806006) do
     t.string "email", null: false
     t.datetime "last_login_at"
     t.string "name", null: false
+    t.string "type"
     t.datetime "updated_at", null: false
     t.index ["email"], name: "index_users_on_email", unique: true
+    t.index ["type"], name: "index_users_on_type"
   end
 
   create_table "versions", force: :cascade do |t|
     t.datetime "created_at"
     t.string "event", null: false
     t.bigint "item_id", null: false
+    t.string "item_subtype"
     t.string "item_type", null: false
     t.text "object", limit: 1073741823
     t.text "object_changes", limit: 1073741823
     t.string "whodunnit"
     t.index ["created_at"], name: "index_versions_on_created_at"
     t.index ["item_type", "item_id"], name: "index_versions_on_item_type_and_item_id"
+    t.index ["item_type", "item_subtype"], name: "index_versions_on_item_type_and_item_subtype"
   end
 
   add_foreign_key "comments", "posts"

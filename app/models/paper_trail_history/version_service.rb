@@ -63,31 +63,34 @@ module PaperTrailHistory
     end
 
     def self.unique_whodunnits(model_name = nil)
-      if model_name
-        trackable_model = TrackableModel.find(model_name)
-        return [] unless trackable_model
-
-        scope = trackable_model.version_class.where(item_type: trackable_model.item_type_for_versions)
-      else
-        scope = all_version_classes.flat_map(&:all)
-        return scope.map(&:whodunnit).compact.uniq.sort
-      end
-
-      scope.distinct.pluck(:whodunnit).compact.sort
+      distinct_column_values(:whodunnit, model_name)
     end
 
     def self.available_events(model_name = nil)
-      if model_name
-        trackable_model = TrackableModel.find(model_name)
-        return [] unless trackable_model
+      distinct_column_values(:event, model_name)
+    end
 
-        scope = trackable_model.version_class.where(item_type: trackable_model.item_type_for_versions)
-      else
-        scope = all_version_classes.flat_map(&:all)
-        return scope.map(&:event).compact.uniq.sort
-      end
+    # Collects the different values of one column for the filter lists.
+    #
+    # Each version class reads its own values with DISTINCT. The engine must not
+    # load the rows, because a version table of a production application can hold
+    # millions of them.
+    #
+    # @param column [Symbol] name of the column
+    # @param model_name [String, nil] name of a trackable model, or nil for all
+    # @return [Array<String>]
+    def self.distinct_column_values(column, model_name)
+      return all_distinct_column_values(column) unless model_name
 
-      scope.distinct.pluck(:event).compact.sort
+      trackable_model = TrackableModel.find(model_name)
+      return [] unless trackable_model
+
+      trackable_model.versions.distinct.pluck(column).compact.sort
+    end
+
+    def self.all_distinct_column_values(column)
+      all_version_classes.flat_map { |version_class| version_class.distinct.pluck(column) }
+                         .compact.uniq.sort
     end
 
     def self.find_version_across_tables(version_id)
@@ -148,7 +151,7 @@ module PaperTrailHistory
     end
 
     def self.base_versions_for_model(trackable_model)
-      trackable_model.version_class.where(item_type: trackable_model.item_type_for_versions)
+      trackable_model.versions
     end
 
     def self.apply_filters(versions, params)
@@ -168,10 +171,7 @@ module PaperTrailHistory
     end
 
     def self.base_versions_for_record(trackable_model, item_id)
-      trackable_model.version_class.where(
-        item_type: trackable_model.item_type_for_versions,
-        item_id: item_id
-      )
+      trackable_model.versions.where(item_id: item_id)
     end
 
     def self.apply_record_filters(versions, params)

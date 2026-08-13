@@ -73,6 +73,24 @@ PaperTrailHistory.configure do |config|
 end
 ```
 
+### Single table inheritance
+
+PaperTrail records the **base class** name in `item_type`, so a version created
+by `Admin < User` is stored as `"User"`. The engine looks versions up by base
+class and narrows them with PaperTrail's optional `item_subtype` column, which
+holds the real class name.
+
+If your versions table has an `item_subtype` column, each STI subclass shows
+exactly its own history, and the base class shows all of it (matching
+ActiveRecord's own STI semantics). Without that column the subtypes are
+indistinguishable in the data, so a subclass falls back to showing its base
+class's versions. To add it:
+
+```ruby
+add_column :versions, :item_subtype, :string
+add_index  :versions, %i[item_type item_subtype]
+```
+
 ### Page size
 
 Version tables grow without bound, so the engine reads one page at a time rather
