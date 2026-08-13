@@ -11,7 +11,11 @@ SimpleCov.start do
   group 'Controllers', 'app/controllers'
   group 'Helpers', 'app/helpers'
   group 'Library', 'lib'
-  minimum_coverage line: 90, branch: 70
+  # The floor belongs to the whole suite. A run of one part, for example
+  # `rake test:integration`, reaches only its own files and would always fail.
+  # Such a run sets PARTIAL_SUITE.
+  # `blank?` is not available here: SimpleCov must start before Rails loads.
+  minimum_coverage(line: 90, branch: 70) if ENV['PARTIAL_SUITE'].to_s.empty?
 end
 
 # Configure Rails Environment

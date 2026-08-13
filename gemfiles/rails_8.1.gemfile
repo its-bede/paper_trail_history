@@ -8,3 +8,9 @@ gemspec path: '../'
 gem 'puma', '~> 6.0'
 gem 'rails', '~> 8.1.0'
 gem 'sqlite3', '~> 2.0'
+
+# The suite needs these, the same as the main Gemfile. Without them
+# `rake test` cannot load the test helper.
+gem 'minitest', '~> 5.25'
+gem 'propshaft'
+gem 'simplecov', require: false

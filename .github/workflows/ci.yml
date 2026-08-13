@@ -114,6 +114,9 @@ jobs:
         bundle exec rails db:seed RAILS_ENV=test
 
     - name: Run integration tests
+      # Only a part of the suite runs here, thus the coverage floor does not apply.
+      env:
+        PARTIAL_SUITE: '1'
       run: bundle exec rake test:integration
 
     - name: Test engine mounting
