@@ -24,6 +24,11 @@ jobs:
     - name: Check that the public API is documented
       run: bundle exec rake yard:coverage
 
+    # Runs in this job on purpose: the test jobs run the migrations first, and on
+    # a newer Rails that rewrites the schema before it could be checked.
+    - name: Check the schema version of the dummy application
+      run: bundle exec rake check_dummy_schema
+
   security:
     runs-on: ubuntu-latest
     steps:
