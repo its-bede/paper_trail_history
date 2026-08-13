@@ -17,3 +17,6 @@
 
 # YARD registry cache
 /.yardoc/
+
+# Test coverage
+/coverage/

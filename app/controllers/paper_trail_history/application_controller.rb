@@ -29,6 +29,21 @@ module PaperTrailHistory
 
     private
 
+    # Finds the trackable model of the request, or redirects.
+    #
+    # The name of the parameter differs between the controllers, thus the caller
+    # gives the value.
+    #
+    # @param model_name [String] value of the parameter that names the model
+    # @return [TrackableModel, nil] nil after a redirect
+    def find_trackable_model_or_redirect(model_name)
+      trackable_model = TrackableModel.find(model_name)
+      return trackable_model if trackable_model
+
+      redirect_to models_path, alert: t('paper_trail_history.errors.model_not_found', model_name: model_name)
+      nil
+    end
+
     # Reads one page of the given versions and decorates only that page.
     #
     # The engine passes the limit for each call instead of writing it into

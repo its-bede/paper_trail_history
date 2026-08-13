@@ -45,6 +45,15 @@ module PaperTrailHistory
 
     # Searches the application for classes that use PaperTrail.
     #
+    # The search asks ActiveRecord for its descendants. It does not walk through
+    # every object of the process, because that is slow and it also finds classes
+    # that Rails removed at a code reload.
+    #
+    # The eager load is necessary: Rails loads a class only when the code asks
+    # for it, thus a model that no request touched yet is not a descendant. The
+    # engine calls the discovery one time for each code reload, thus the cost
+    # happens one time and not on each request.
+    #
     # @api private
     # @return [Array<TrackableModel>]
     def self.discover_all
@@ -52,8 +61,8 @@ module PaperTrailHistory
 
       # Only keep one instance per class name to avoid duplicates
       trackable_classes = {}
-      ObjectSpace.each_object(Class) do |klass|
-        next unless klass < ActiveRecord::Base
+      ActiveRecord::Base.descendants.each do |klass|
+        next if klass.name.nil? # an anonymous class has no name to show
         next if klass.abstract_class?
         next unless klass.included_modules.include?(PaperTrail::Model::InstanceMethods)
 

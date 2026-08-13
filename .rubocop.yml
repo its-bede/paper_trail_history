@@ -54,6 +54,10 @@ Metrics/ModuleLength: &line_count_metrics
 Metrics/ClassLength:
   <<: *line_count_metrics
   Exclude:
+    # Known debt, see task Q1. The class is 160 lines of code. Its internal
+    # methods are private now, thus the API is small, but the class still does
+    # queries and restores. To divide it into a query object and a restorer is
+    # an architecture decision and waits for a decision of the maintainer.
     - app/models/paper_trail_history/version_service.rb
     # A test class is a flat list of independent cases, not a unit of logic.
     # Splitting it by line count would group tests by accident instead of by topic.

@@ -100,19 +100,19 @@ module PaperTrailHistory
     end
 
     test 'names the attribute that changed' do
-      change = @decorator.changed_attributes.first
+      change = @decorator.attribute_changes.first
 
       assert_equal 'name', change[:attribute]
     end
 
     test 'gives the value before the change' do
-      change = @decorator.changed_attributes.first
+      change = @decorator.attribute_changes.first
 
       assert_equal 'old_name', change[:old_value]
     end
 
     test 'gives the value after the change' do
-      change = @decorator.changed_attributes.first
+      change = @decorator.attribute_changes.first
 
       assert_equal 'new_name', change[:new_value]
     end
@@ -120,7 +120,7 @@ module PaperTrailHistory
     test 'gives no change for a version without a changeset' do
       version = create_test_version(object_changes: nil)
 
-      assert_empty VersionDecorator.new(version).changed_attributes
+      assert_empty VersionDecorator.new(version).attribute_changes
     end
 
     test 'hides the old value of an attribute that the host application filters' do
@@ -137,7 +137,7 @@ module PaperTrailHistory
 
     test 'shows the value of an attribute that the host application does not filter' do
       version = create_test_version(object_changes: { name: %w[old_name new_name] }.to_yaml)
-      change = VersionDecorator.new(version).changed_attributes.first
+      change = VersionDecorator.new(version).attribute_changes.first
 
       assert_equal 'new_name', change[:new_value]
     end
@@ -164,7 +164,7 @@ module PaperTrailHistory
         object_changes: { email: %w[old@example.com new@example.com] }.to_yaml
       )
 
-      VersionDecorator.new(version).changed_attributes.first
+      VersionDecorator.new(version).attribute_changes.first
     end
 
     def create_test_version(attributes = {})

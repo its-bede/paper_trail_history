@@ -84,7 +84,7 @@
   </div>
 </div>
 
-<% if @decorated_version.changed_attributes.any? %>
+<% if @decorated_version.attribute_changes.any? %>
   <div class="card">
     <div class="card-header">
       <h5 class="mb-0">
@@ -94,7 +94,7 @@
     </div>
     <div class="card-body">
       <div class="diff-container">
-        <% @decorated_version.changed_attributes.each do |change| %>
+        <% @decorated_version.attribute_changes.each do |change| %>
           <div class="diff-section mb-4">
             <div class="diff-header">
               <i class="bi bi-at"></i>

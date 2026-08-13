@@ -1,5 +1,19 @@
 # frozen_string_literal: true
 
+# Coverage must start before the code of the engine is loaded, else the lines
+# that run at load time count as missed.
+require 'simplecov'
+SimpleCov.start do
+  enable_coverage :branch
+  skip '/test/'
+  # The engine lives in app/ and lib/. Only those directories count.
+  group 'Models', 'app/models'
+  group 'Controllers', 'app/controllers'
+  group 'Helpers', 'app/helpers'
+  group 'Library', 'lib'
+  minimum_coverage line: 90, branch: 70
+end
+
 # Configure Rails Environment
 ENV['RAILS_ENV'] = 'test'
 

@@ -66,6 +66,15 @@ module PaperTrailHistory
       assert_equal [wanted.id], ids & [wanted.id, other.id]
     end
 
+    test 'treats a wildcard of the user as a normal character' do
+      wanted = create_test_version(object_changes: { name: ['old', '50% off'] }.to_yaml)
+      other = create_test_version(object_changes: { name: %w[old plain] }.to_yaml)
+
+      ids = VersionService.for_model('User', search: '%').map(&:id)
+
+      assert_equal [wanted.id], ids & [wanted.id, other.id]
+    end
+
     test 'gives the versions of the named record' do
       wanted = create_test_version(item_id: 123)
       other = create_test_version(item_id: 456)

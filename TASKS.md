@@ -10,8 +10,8 @@ The text uses ASD-STE100 Simplified Technical English.
 > that fails now.
 
 **Highest priority:** S1, R1, R9, S2, P1, R2, D2, P2, P3, R4 - all done.
-Next: T1 (the tests that test nothing), P6, then the small ones R7, R8, P5,
-Q1, Q2, Q3 and the test tasks T2 to T5.
+All tasks of this review are done, except two that wait for a decision of the
+maintainer: the division of `VersionService` (Q1) and `Gemfile.lock` in Git (Q7).
 
 ---
 
@@ -85,15 +85,15 @@ refuses the whole source list and blocks everything. The engine writes no
 attribute if the host application makes no nonce. The README warns about the
 suggestion of Rails, `request.session.id.to_s`, which is empty without a session.
 
-### S5 - Escape the LIKE wildcards in the search - **Low**
+### S5 - Escape the LIKE wildcards in the search - **Low** - DONE (0.3.0)
 
 `app/models/paper_trail_history/version_service.rb:106`
 
 The query uses bind parameters, thus SQL injection is not possible. But the user
 input keeps the `%` and `_` wildcards. A search for `%` reads all rows.
 
-- [ ] Use `sanitize_sql_like`.
-- [ ] Limit the length of the search term.
+- [x] Use `sanitize_sql_like` with an ESCAPE clause. Without the clause SQLite does not know the escape character.
+- [x] Limit the length of the search term to 100 characters.
 
 ---
 
@@ -306,37 +306,41 @@ are already in memory.
 
 The views use `@pagy.count`, which comes from the count query of the paginator.
 
-### P5 - Make the content search faster - **Medium**
+### P5 - Make the content search faster - **Medium** - DONE (0.3.0)
 
 `app/models/paper_trail_history/version_service.rb:106`
 
 `LIKE '%term%'` cannot use an index. The database reads the full table.
 
-- [ ] Write this limit in the documentation.
-- [ ] Add an option for a JSONB search or a full-text index.
+- [x] Write this limit in the documentation and in the method.
+- [ ] Add an option for a JSONB search or a full-text index. This waits for a user who needs it.
 
-### P6 - Replace `ObjectSpace.each_object` - **Medium**
+### P6 - Replace `ObjectSpace.each_object` - **Medium** - DONE (0.3.0)
 
 `app/models/paper_trail_history/trackable_model.rb:21`
 
 The code reads all classes in the process. This is slow. It can also find classes
 that Rails removed.
 
-- [ ] Use `ActiveRecord::Base.descendants` after `eager_load!`.
+- [x] Use `ActiveRecord::Base.descendants` after `eager_load!`. A test makes sure that `ObjectSpace` is not used.
 
-### P7 - Do not call `eager_load!` in a request - **Low**
+### P7 - Do not call `eager_load!` in a request - **Low** - DONE (0.3.0)
 
 `app/models/paper_trail_history/trackable_model.rb:17`
 
 In development the first request loads the full application.
 
-- [ ] Move the call to an initializer, or write it in the documentation.
+- [x] Write it in the documentation of the method.
+
+The call must stay: Rails loads a class only when the code asks for it, thus a
+model that no request touched is not a descendant. The cache makes the cost
+happen one time for each code reload and not on each request.
 
 ---
 
 ## 4. Code Quality
 
-### Q1 - Divide `VersionService` - **Medium**
+### Q1 - Divide `VersionService` - **Medium** - PART DONE
 
 `app/models/paper_trail_history/version_service.rb`, `.rubocop.yml:54-57`
 
@@ -344,20 +348,24 @@ The class has 172 lines and 25 public class methods. Internal methods such as
 `apply_filters` and `filter_by_event` are public. The RuboCop file has an
 exclusion for `Metrics/ClassLength`. The exclusion hides the problem.
 
+- [x] Make internal methods private with `private_class_method`. The API is now 7 methods, not 25.
 - [ ] Make a query object and a restore service.
-- [ ] Make internal methods private with `private_class_method`.
-- [ ] Remove the RuboCop exclusions.
+- [ ] Remove the RuboCop exclusion for `Metrics/ClassLength`.
 
-### Q2 - Change the name of `VersionDecorator#changed_attributes` - **Low**
+**Waits for a decision.** The rules in `rails-architecture.md` say for a large
+service: adapt, do not refactor. To divide the class is an architecture decision
+and needs the word of the maintainer. The class has 160 lines of code.
+
+### Q2 - Change the name of `VersionDecorator#changed_attributes` - **Low** - DONE (0.3.0)
 
 `app/models/paper_trail_history/version_decorator.rb:60`
 
 ActiveModel has a method with the same name and a different result. This causes
 confusion.
 
-- [ ] Use a different name, for example `attribute_changes`.
+- [x] The method is `attribute_changes` now.
 
-### Q3 - Remove the duplicate controller code - **Low**
+### Q3 - Remove the duplicate controller code - **Low** - DONE (0.3.0)
 
 `app/controllers/paper_trail_history/models_controller.rb:33`,
 `app/controllers/paper_trail_history/records_controller.rb:25`
@@ -365,7 +373,7 @@ confusion.
 `find_trackable_model_or_redirect` exists two times. Only the parameter name is
 different.
 
-- [ ] Move the method to `ApplicationController`.
+- [x] Move the method to `ApplicationController`. It takes the name as an argument, because the two controllers use different parameter names. `ModelsController#show` had a third copy and uses the method now.
 
 ### Q4 - Move the CSS and the JavaScript out of the layout - **Low** - PART DONE
 
@@ -397,19 +405,20 @@ and the interpolations of the locale files.
 **Open point:** the gem gives only English and German. An application with a
 third language needs `config.i18n.fallbacks`. The README says this.
 
-### Q6 - Remove the placeholder comment - **Low**
+### Q6 - Remove the placeholder comment - **Low** - DONE (0.3.0)
 
 `lib/paper_trail_history.rb:14` has `# Your code goes here...`.
 
-- [ ] Remove the comment.
+- [x] The comment went away with the configuration API (S1).
 
-### Q7 - Remove the build artifacts - **Low** - PART DONE
+### Q7 - Remove the build artifacts - **Low** - DONE (0.3.0)
 
 `paper_trail_history-0.2.0.gem` and `paper_trail_history-0.2.1.gem` are in the
 working directory. `.gitignore` does not have them.
 
 - [x] Add `*.gem` to `.gitignore`. The `.gitignore` also ignores the artifacts of the browser automation now.
-- [ ] Think about the removal of `Gemfile.lock` from Git, because this project is a gem.
+- [x] The two `.gem` files are deleted.
+- [ ] `Gemfile.lock` stays in Git. A gem usually does not keep it, but it makes the CI runs of this project repeatable. This waits for a decision.
 
 ---
 
@@ -472,11 +481,11 @@ correct here.
 - [x] Give an example with a route constraint.
 - [x] Warn about the restore function and about the exposure of the data.
 
-### D5 - Delete or move `PLAN.md` - **Low**
+### D5 - Delete or move `PLAN.md` - **Low** - DONE (0.3.0)
 
 All items are done. The file is not useful for the user of the gem.
 
-- [ ] Delete the file, or move it to the wiki.
+- [x] The file is deleted. Every item in it was done.
 
 ---
 
@@ -522,12 +531,16 @@ that is not trackable.
 - [x] Add `test/controllers/paper_trail_history/records_controller_test.rb`.
 - [x] Test the `versions` action, its filter and a record that is deleted.
 
-### T5 - Add coverage and security checks to the CI - **Medium**
+### T5 - Add coverage and security checks to the CI - **Medium** - DONE (0.3.0)
 
 `.github/workflows/ci.yml`
 
-- [ ] Add SimpleCov with a minimum value.
-- [ ] Add a `bundler-audit` step and a `brakeman` step.
+- [x] Add SimpleCov with a minimum. The suite reaches 97.6 percent of the lines and 89.7 percent of the branches.
+- [x] Add a `bundler-audit` step and a `brakeman` step.
+
+**The new check found real faults at once:** `action_text-trix`, `actionpack`,
+`actionview`, `puma`, `rack` and `sqlite3` had known vulnerabilities. All are
+updated. Brakeman finds no warning.
 
 ### T6 - Repair the local development environment - **Low** - DONE
 

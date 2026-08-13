@@ -10,6 +10,14 @@ module PaperTrailHistory
   # @example List the versions of a model with a filter
   #   PaperTrailHistory::VersionService.for_model('User', event: 'update')
   class VersionService
+    # The longest search text that the engine sends to the database. A longer
+    # text costs time and gives no better result.
+    SEARCH_TERM_LIMIT = 100
+
+    # Marks a wildcard of the user as a normal character. A backslash would need
+    # its own escaping in each database, this character does not.
+    SEARCH_ESCAPE_CHARACTER = '!'
+
     # The versions of one model, newest first.
     #
     # @param model_name [String] name of a trackable class
@@ -236,14 +244,24 @@ module PaperTrailHistory
     # Searches the stored YAML of the versions.
     #
     # The query uses LIKE with the text in the middle, thus the database cannot
-    # use an index and reads the whole table.
+    # use an index and reads the whole table. On a large version table this
+    # search is slow. The README says this.
+    #
+    # The wildcards of the user are escaped, thus a search for a percent sign
+    # looks for that character and does not match every row.
     #
     # @api private
     # @param versions [ActiveRecord::Relation]
     # @param search_term [String]
     # @return [ActiveRecord::Relation]
     def self.search_object_changes(versions, search_term)
-      versions.where('object_changes LIKE ? OR object LIKE ?', "%#{search_term}%", "%#{search_term}%")
+      term = ActiveRecord::Base.sanitize_sql_like(search_term.to_s.first(SEARCH_TERM_LIMIT), SEARCH_ESCAPE_CHARACTER)
+
+      versions.where(
+        "object_changes LIKE :pattern ESCAPE '#{SEARCH_ESCAPE_CHARACTER}' " \
+        "OR object LIKE :pattern ESCAPE '#{SEARCH_ESCAPE_CHARACTER}'",
+        pattern: "%#{term}%"
+      )
     end
 
     # @api private
@@ -351,5 +369,28 @@ module PaperTrailHistory
       version.reify.save!
       { success: true, item: version.item, message: I18n.t('paper_trail_history.messages.restore_to_previous') }
     end
+
+    # The methods above this line are the API of the class. Everything below is
+    # internal and can change without notice.
+    private_class_method :all_distinct_column_values
+    private_class_method :find_version_across_tables
+    private_class_method :discover_version_classes
+    private_class_method :filter_by_event
+    private_class_method :filter_by_whodunnit
+    private_class_method :filter_by_date_range
+    private_class_method :parse_date
+    private_class_method :search_object_changes
+    private_class_method :base_versions_for_model
+    private_class_method :apply_filters
+    private_class_method :apply_date_range_filter
+    private_class_method :date_range_params?
+    private_class_method :base_versions_for_record
+    private_class_method :apply_record_filters
+    private_class_method :version_restorable?
+    private_class_method :validate_version_for_restore
+    private_class_method :perform_version_restore
+    private_class_method :restore_destroyed_record
+    private_class_method :restore_previous_version
+    private_class_method :distinct_column_values
   end
 end

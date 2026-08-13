@@ -54,6 +54,23 @@ module PaperTrailHistory
       assert_equal %w[Admin Comment Document Post Product User], TrackableModel.all.map(&:name)
     end
 
+    test 'does not read every class of the process to find the models' do
+      TrackableModel.clear_cache!
+      scanned = false
+
+      ObjectSpace.stub(:each_object, lambda { |*|
+        scanned = true
+        []
+      }) do
+        TrackableModel.all
+      end
+
+      assert_not scanned
+    ensure
+      # The stub would leave an empty model list in the cache.
+      TrackableModel.clear_cache!
+    end
+
     test 'finds a model by name' do
       assert_equal 'User', TrackableModel.find('User').name
     end

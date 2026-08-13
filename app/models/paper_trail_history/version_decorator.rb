@@ -11,7 +11,7 @@ module PaperTrailHistory
   # @example
   #   decorated = PaperTrailHistory::VersionDecorator.decorate(version)
   #   decorated.event_label    # => "Updated"
-  #   decorated.changed_attributes
+  #   decorated.attribute_changes
   #   # => [{ attribute: 'name', old_value: 'old', new_value: 'new' }]
   class VersionDecorator
     # @return [ActiveRecord::Base] the version that this object decorates
@@ -118,9 +118,13 @@ module PaperTrailHistory
     # An attribute that the host application filters gets a placeholder for both
     # values, thus a password digest or an API token does not appear.
     #
+    # The name is not +changed_attributes+. ActiveModel gives that name to a
+    # method with a different result, and the decorator passes methods of the
+    # version through, thus the two would be easy to mix up.
+    #
     # @return [Array<Hash>] each entry has +:attribute+, +:old_value+ and
     #   +:new_value+
-    def changed_attributes
+    def attribute_changes
       return [] unless changeset
 
       changeset.map do |attr, (old_val, new_val)|

@@ -4,7 +4,7 @@ module PaperTrailHistory
   # Controller for managing individual record operations and their version histories
   class RecordsController < ApplicationController
     def show
-      @trackable_model = find_trackable_model_or_redirect
+      @trackable_model = find_trackable_model_or_redirect(params[:model_name])
       return unless @trackable_model
 
       load_record_data
@@ -12,7 +12,7 @@ module PaperTrailHistory
     end
 
     def versions
-      @trackable_model = find_trackable_model_or_redirect
+      @trackable_model = find_trackable_model_or_redirect(params[:model_name])
       return unless @trackable_model
 
       load_record_data
@@ -21,15 +21,6 @@ module PaperTrailHistory
     end
 
     private
-
-    def find_trackable_model_or_redirect
-      trackable_model = TrackableModel.find(params[:model_name])
-      unless trackable_model
-        redirect_to models_path, alert: t('paper_trail_history.errors.model_not_found', model_name: params[:model_name])
-        return nil
-      end
-      trackable_model
-    end
 
     def load_record_data
       klass = @trackable_model.klass

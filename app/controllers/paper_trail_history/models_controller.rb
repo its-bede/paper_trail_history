@@ -8,12 +8,8 @@ module PaperTrailHistory
     end
 
     def show
-      @trackable_model = TrackableModel.find(params[:name])
-
-      unless @trackable_model
-        redirect_to models_path, alert: t('paper_trail_history.errors.model_not_found', model_name: params[:name])
-        return
-      end
+      @trackable_model = find_trackable_model_or_redirect(params[:name])
+      return unless @trackable_model
 
       @recent_versions = VersionDecorator.decorate_collection(
         @trackable_model.recent_versions(20)
@@ -21,7 +17,7 @@ module PaperTrailHistory
     end
 
     def versions
-      @trackable_model = find_trackable_model_or_redirect
+      @trackable_model = find_trackable_model_or_redirect(params[:name])
       return unless @trackable_model
 
       load_versions_data
@@ -29,15 +25,6 @@ module PaperTrailHistory
     end
 
     private
-
-    def find_trackable_model_or_redirect
-      trackable_model = TrackableModel.find(params[:name])
-      unless trackable_model
-        redirect_to models_path, alert: t('paper_trail_history.errors.model_not_found', model_name: params[:name])
-        return nil
-      end
-      trackable_model
-    end
 
     def load_versions_data
       @versions = VersionService.for_model(params[:name], filter_params).includes(:item)
