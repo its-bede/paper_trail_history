@@ -4,16 +4,13 @@ module PaperTrailHistory
   # Controller for managing trackable model operations and displaying version histories
   class ModelsController < ApplicationController
     def index
-      @trackable_models = TrackableModel.all_with_counts
+      @show_counts = PaperTrailHistory.config.show_version_counts
+      @trackable_models = @show_counts ? TrackableModel.all_with_counts : TrackableModel.all
     end
 
     def show
-      @trackable_model = TrackableModel.find(params[:name])
-
-      unless @trackable_model
-        redirect_to models_path, alert: t('paper_trail_history.errors.model_not_found', model_name: params[:name])
-        return
-      end
+      @trackable_model = find_trackable_model_or_redirect(params[:name])
+      return unless @trackable_model
 
       @recent_versions = VersionDecorator.decorate_collection(
         @trackable_model.recent_versions(20)
@@ -21,7 +18,7 @@ module PaperTrailHistory
     end
 
     def versions
-      @trackable_model = find_trackable_model_or_redirect
+      @trackable_model = find_trackable_model_or_redirect(params[:name])
       return unless @trackable_model
 
       load_versions_data
@@ -30,19 +27,9 @@ module PaperTrailHistory
 
     private
 
-    def find_trackable_model_or_redirect
-      trackable_model = TrackableModel.find(params[:name])
-      unless trackable_model
-        redirect_to models_path, alert: t('paper_trail_history.errors.model_not_found', model_name: params[:name])
-        return nil
-      end
-      trackable_model
-    end
-
     def load_versions_data
-      @versions = VersionService.for_model(params[:name], filter_params)
-      @versions = @versions.includes(:item)
-      @decorated_versions = VersionDecorator.decorate_collection(@versions)
+      @versions = VersionService.for_model(params[:name], filter_params).includes(:item)
+      @pagy, @decorated_versions = paginate_versions(@versions)
     end
 
     def load_filter_options

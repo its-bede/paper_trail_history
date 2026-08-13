@@ -4,7 +4,7 @@ module PaperTrailHistory
   # Controller for managing individual record operations and their version histories
   class RecordsController < ApplicationController
     def show
-      @trackable_model = find_trackable_model_or_redirect
+      @trackable_model = find_trackable_model_or_redirect(params[:model_name])
       return unless @trackable_model
 
       load_record_data
@@ -12,7 +12,7 @@ module PaperTrailHistory
     end
 
     def versions
-      @trackable_model = find_trackable_model_or_redirect
+      @trackable_model = find_trackable_model_or_redirect(params[:model_name])
       return unless @trackable_model
 
       load_record_data
@@ -22,17 +22,11 @@ module PaperTrailHistory
 
     private
 
-    def find_trackable_model_or_redirect
-      trackable_model = TrackableModel.find(params[:model_name])
-      unless trackable_model
-        redirect_to models_path, alert: t('paper_trail_history.errors.model_not_found', model_name: params[:model_name])
-        return nil
-      end
-      trackable_model
-    end
-
     def load_record_data
-      @record = @trackable_model.klass.find_by(id: params[:record_id])
+      klass = @trackable_model.klass
+      # PaperTrail writes the value of the primary key into item_id. A model can
+      # use a primary key that is not called id.
+      @record = klass.find_by(klass.primary_key => params[:record_id])
       @record_id = params[:record_id]
     end
 
@@ -43,8 +37,10 @@ module PaperTrailHistory
     end
 
     def load_versions_with_filters
+      # No preload of :item here. This list shows the versions of one record and
+      # does not show the name of the item, thus a preload would only cost a query.
       @versions = VersionService.for_record(params[:model_name], params[:record_id], filter_params)
-      @decorated_versions = VersionDecorator.decorate_collection(@versions)
+      @pagy, @decorated_versions = paginate_versions(@versions)
     end
 
     def load_available_events

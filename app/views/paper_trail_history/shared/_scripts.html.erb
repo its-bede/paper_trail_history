@@ -1,0 +1,34 @@
+<%# locals: () -%>
+// Initialize Bootstrap tooltips - works with both regular apps and Turbo
+function initTooltips() {
+  // Dispose of existing tooltips first to prevent duplicates
+  document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(el => {
+    const existingTooltip = bootstrap.Tooltip.getInstance(el);
+    if (existingTooltip) existingTooltip.dispose();
+  });
+  
+  // Initialize new tooltips
+  const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
+  [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl));
+}
+
+// Initialize on both initial load and Turbo navigation
+document.addEventListener('DOMContentLoaded', initTooltips);
+document.addEventListener('turbo:load', initTooltips);
+
+// Confirmation for destructive actions.
+//
+// This engine loads neither Turbo nor rails-ujs, so `data-confirm` and
+// `data-turbo-confirm` would both be inert and a restore would run on the
+// first click. The attribute is namespaced (`data-pth-confirm`) so that a
+// host application that does load Turbo does not also show its own dialog.
+//
+// The listener uses the capture phase, so it runs before a framework in the
+// host application can take the submit event over.
+document.addEventListener('submit', function (event) {
+  const message = event.target.dataset && event.target.dataset.pthConfirm;
+  if (message && !window.confirm(message)) {
+    event.preventDefault();
+    event.stopPropagation();
+  }
+}, true);

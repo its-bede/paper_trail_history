@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
 module PaperTrailHistory
-  VERSION = '0.2.1'
+  # The version of this gem.
+  VERSION = '0.3.0'
 end

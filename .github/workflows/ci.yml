@@ -21,6 +21,33 @@ jobs:
     - name: Run RuboCop
       run: bundle exec rubocop
 
+    - name: Check that the public API is documented
+      run: bundle exec rake yard:coverage
+
+    # Runs in this job on purpose: the test jobs run the migrations first, and on
+    # a newer Rails that rewrites the schema before it could be checked.
+    - name: Check the schema version of the dummy application
+      run: bundle exec rake check_dummy_schema
+
+  security:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Ruby
+      uses: ruby/setup-ruby@v1
+      with:
+        ruby-version: '3.4'
+        bundler-cache: true
+
+    - name: Check dependencies for known vulnerabilities
+      run: |
+        bundle exec bundle-audit update
+        bundle exec bundle-audit check
+
+    - name: Run Brakeman
+      run: bundle exec brakeman --no-pager --quiet --force
+
   test:
     runs-on: ubuntu-latest
     strategy:
@@ -92,6 +119,9 @@ jobs:
         bundle exec rails db:seed RAILS_ENV=test
 
     - name: Run integration tests
+      # Only a part of the suite runs here, thus the coverage floor does not apply.
+      env:
+        PARTIAL_SUITE: '1'
       run: bundle exec rake test:integration
 
     - name: Test engine mounting

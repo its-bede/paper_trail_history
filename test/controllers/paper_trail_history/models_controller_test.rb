@@ -12,6 +12,26 @@ module PaperTrailHistory
       assert_select 'h1', 'Trackable Models'
     end
 
+    test 'loads the items of the recent versions with one query' do
+      create_users_with_versions(3)
+
+      queries = capture_sql { get model_url('User') }
+
+      assert_equal(1, queries.count { |sql| sql.match?(/SELECT\s+"users"\.\*\s+FROM\s+"users"/) })
+    end
+
+    test 'shows the version list when the from date of the URL is not a date' do
+      get versions_model_url('User', from_date: 'not-a-date')
+
+      assert_response :success
+    end
+
+    test 'shows the version list when the to date of the URL is not a date' do
+      get versions_model_url('User', to_date: '31.02.2026')
+
+      assert_response :success
+    end
+
     test 'index shows message when no models' do
       TrackableModel.stub :all, [] do
         get models_url
@@ -56,6 +76,15 @@ module PaperTrailHistory
         assert_redirected_to models_path
         follow_redirect!
         assert_select '.alert-danger'
+      end
+    end
+
+    private
+
+    def create_users_with_versions(count)
+      count.times do
+        user = User.create!(name: 'Item Owner', email: "p3-#{SecureRandom.hex(4)}@example.com")
+        user.update!(name: 'Renamed')
       end
     end
   end

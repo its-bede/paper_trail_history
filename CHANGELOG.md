@@ -7,6 +7,59 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-08-13
+
+### Security
+- **BREAKING**: The engine now refuses requests with `403 Forbidden` when the host application has not configured access control. Previously, mounting the engine exposed the complete audit trail and the record-restoring `restore` endpoint to anyone who knew the mount path, because `PaperTrailHistory::ApplicationController` inherits from `ActionController::Base` and therefore never ran the host application's `before_action` filters. Development and test environments remain open and log a warning instead, so the dummy app and existing test suites keep working.
+
+### Added
+- **Configuration API**: `PaperTrailHistory.configure` with `parent_controller`, `authenticate_with`, `authorize_restore_with`, `allow_unauthenticated_access`, `filter_attributes`, `page_limit`, `assets` and `show_version_counts`
+- **Attribute redaction**: the record page and the version diff previously printed every attribute verbatim, including password digests, API tokens and their historical values. Values are now redacted using `Rails.application.config.filter_parameters` by default, and `config.filter_attributes` extends the list. Matching is delegated to `ActiveSupport::ParameterFilter`, so symbols, strings, regular expressions and procs all behave as they do in Rails log filtering
+- **Separate restore authorization**: `authorize_restore_with` gates the destructive `restore` action independently from read access, so teams can grant read-only history access
+- **Security documentation**: New README section covering the threat model, both configuration styles and route-level protection
+- **Security scanning and coverage in CI**: `bundler-audit` and `brakeman` now run on every push, and the suite enforces a coverage floor with SimpleCov (currently 96.6% line, 87.2% branch). The audit found known vulnerabilities in `action_text-trix`, `actionpack`, `actionview`, `puma`, `rack` and `sqlite3` on its first run; all are updated
+- **API documentation**: the public API now carries YARD documentation with `@param`, `@return`, `@raise` and examples, and internal helpers are marked `@api private`. `rake yard` generates the docs and `rake yard:coverage` fails when a public object has none; CI runs the latter
+
+### Fixed
+- **Model list was slow with many version tables**: building the version-count column costs one `COUNT` per version table, and a count reads the whole table. An application that gives each model its own version table therefore paid one full table read per model on the engine's landing page — with ~120 models and tables in the millions of rows, tens of seconds. The column is now off by default (`config.show_version_counts = true` restores it); each model's own page still shows its count as a single query. Counting STI subclasses no longer needs a query per subclass either: the grouped count now groups by `item_type` **and** `item_subtype`, which also avoids the extra per-subclass query that the STI fix in this same release would otherwise have added
+- **Wildcards in the search were not escaped**: a search for `%` matched every row, because the user's input went into a `LIKE` pattern unescaped. Input is now escaped with an explicit `ESCAPE` clause, which SQLite needs, and capped at 100 characters
+- **Model discovery walked every object in the process**: `ObjectSpace.each_object(Class)` is slow and also returns classes that Rails has removed. The engine asks `ActiveRecord::Base.descendants` instead
+- **Records with a non-integer primary key**: the record page looked up `find_by(id:)`, which fails outright for a model whose primary key is not `id`
+- **CDN assets had no integrity check**: Bootstrap's CSS, icon font and JS were pulled from a public CDN with no subresource integrity, so anything served from that host executed unchecked. All three are now pinned with a `sha384` hash and marked `crossorigin`, and `config.assets` lets you serve them from the host application instead - necessary for an air-gapped network or a policy that allows no third-party origin
+- **Inline style and script were blocked by a strict CSP**: the layout emitted `<style>` and `<script>` without a nonce, so a host application with a nonce-based policy rendered the interface unstyled and non-functional. Both now carry the nonce, as do the external tags. No nonce attribute is written at all when the application produces an empty one, since an empty nonce invalidates the whole source list
+- **Version page crashed for a removed model**: `item_type` is stored as text, so versions outlive the model they describe. After a model was renamed or deleted, opening one of its versions called `human_name` on `nil` and returned a 500. The page now redirects with the existing "model not found" message
+- **Stale caches after a code reload**: the discovered trackable models and version classes were memoized in class variables that survived Rails' development reloads, so the engine held class objects that had been removed from the module tree. Both caches are cleared from a `to_prepare` hook, and the memoization is guarded by a reentrant `Monitor` instead of an unsynchronized `||=`
+- **Restore had no working confirmation**: the restore buttons used `data-confirm`, but the engine layout loads neither Turbo nor rails-ujs, so the attribute was inert and a single click overwrote the record with no prompt. The engine now ships a small handler bound to its own `data-pth-confirm` attribute, so it works regardless of what the host application loads, and does not produce a second dialog for hosts that do load Turbo. The confirmation text is translated (`en`, `de`)
+- **STI models showed no history**: PaperTrail stores the base class name in `item_type`, so looking versions up by the subclass name (`Admin` for `Admin < User`) matched nothing and every STI subclass reported zero versions. Lookups now use the base class and narrow the result with PaperTrail's `item_subtype` column when the versions table has one; without that column a subclass falls back to its base class's versions, as the data cannot distinguish them
+- **Filter lists loaded every version row**: with no model selected, `unique_whodunnits` and `available_events` called `.all` on every version class and reduced the rows in Ruby, loading the entire audit trail into memory to build two dropdowns. Both now use `DISTINCT` in the database
+- **N+1 when listing recent versions**: `TrackableModel#recent_versions` did not preload `:item`, so a 20-row list on the model page issued 20 extra queries. It now preloads. Conversely the per-record version list no longer preloads `:item`, because that view does not render item names and the preload was pure overhead
+- **Invalid date filters returned a 500**: `?from_date=abc` reached `Date.parse` unguarded and raised `Date::Error`, so any malformed date in the URL took the page down. Unparseable dates are now ignored and the rest of the filter still applies
+- **Documentation**: the README and CLAUDE.md still claimed Rails >= 7.2 and Ruby >= 3.1.0, and pointed at `gemfiles/rails_7.2.gemfile`, which was removed in 0.2.0. They now state the actual requirements (Ruby >= 3.3.0, Rails >= 8.0) and reference the Rails 8.1 Gemfile
+- **Restoring was broken on Rails 7.1+ defaults**: PaperTrail stores the previous state of a record as YAML, and Rails permits only a small set of classes in a YAML column - not including `ActiveSupport::TimeWithZone`. Reifying any model with `created_at`/`updated_at` therefore failed with a raw `Tried to load unspecified class` error. The engine now reports which Rails setting to change, and the README documents the required `yaml_column_permitted_classes` configuration. Browsing history was never affected, only restoring.
+- **Restore could modify the wrong record**: `VersionService.restore_version` now accepts the version record itself instead of only an ID. In applications with more than one version table (PaperTrail's `versions` plus a custom class such as `ProductVersion`), the same ID can exist in each table. The controller resolved the version correctly using `model_name` and then discarded it, so the restore searched by ID again and could act on a completely different record. Passing an ID still works for backwards compatibility, but is ambiguous in multi-table setups.
+
+### Changed
+- **Smaller public API**: `VersionService` exposed all 25 of its methods, including every filter helper. Only the 7 that callers need stay public; the rest are `private_class_method`
+- `VersionDecorator#changed_attributes` is now `attribute_changes`, because ActiveModel gives the old name to a method with a different meaning and the decorator passes version methods through
+- **Translated interface**: the views contained hardcoded English throughout, so the shipped `de.yml` only ever translated a handful of flash messages while every heading, label, button and table header stayed English. All view strings now go through I18n, and dates and times use per-locale format strings instead of a hardcoded US format. English output is unchanged. The test suite renders every page in German and runs with `raise_on_missing_translations`, and a locale test asserts that all files carry the same keys and interpolations
+- **BREAKING**: added a runtime dependency on [Pagy](https://github.com/ddnexus/pagy) (`~> 43.0`). Applications already using an older Pagy major have to upgrade, because Pagy changes its API between majors
+- **Pagination**: version lists previously loaded every matching row into memory and decorated all of them - a model with a million versions could exhaust the process. Both version lists now read one page at a time with SQL `LIMIT`/`OFFSET`, with the page size configurable via `config.page_limit` (default 25). The limit is passed per query instead of written into the global `Pagy::OPTIONS`, so the engine does not change pagination defaults in the host application
+- The version count shown above each list now comes from the paginator instead of a second `COUNT` query
+- `PaperTrailHistory::ApplicationController` now declares its layout explicitly, so inheriting from a host controller that declares its own layout no longer changes how engine views render
+- The dummy application configures `yaml_column_permitted_classes`, which a host application needs before PaperTrail can deserialize a record with timestamps
+
+### Upgrading from 0.2.x
+
+Four changes need attention. All are configurable in `config/initializers/paper_trail_history.rb`.
+
+1. **Access control is now required.** Set either `parent_controller` or `authenticate_with`, or the engine answers `403` outside development and test. If another layer already protects the mount point, set `allow_unauthenticated_access = true`.
+2. **Pagy `~> 43.0` is a new runtime dependency.** An application on an older Pagy major has to upgrade, because Pagy changes its API between majors.
+3. **Attribute values are redacted by default** using your `config.filter_parameters`. Rails' default list includes `:email`, so email addresses are hidden out of the box; set `config.filter_attributes` if that is not what you want.
+4. **The model list no longer shows version counts.** Set `config.show_version_counts = true` to restore the column — but read the note in the README first if your application has many version tables.
+
+Two further settings are worth checking even though nothing breaks without them:
+`config.active_record.yaml_column_permitted_classes` must include the types your models store, or restoring fails; and if your versions table has no `item_subtype` column, STI subclasses show their base class's history.
+
 ## [0.2.1] - 2025-12-16
 
 ### Fixed

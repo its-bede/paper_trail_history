@@ -8,3 +8,18 @@
 /test/dummy/log/*.log
 /test/dummy/storage/
 /test/dummy/tmp/
+
+# Browser automation artifacts
+/.playwright-mcp/
+
+# Built gems
+*.gem
+
+# YARD registry cache
+/.yardoc/
+
+# Test coverage
+/coverage/
+
+# Locks of the version matrix are per machine, not for Git
+/gemfiles/*.lock

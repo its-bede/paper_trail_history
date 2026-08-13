@@ -1,10 +1,13 @@
 de:
   paper_trail_history:
     errors:
+      access_not_configured: "PaperTrailHistory ist nicht konfiguriert. Die Host-Anwendung muss config.authenticate_with oder config.parent_controller in einem Initializer setzen, bevor diese Oberfläche verfügbar ist."
+      restore_not_allowed: "Sie dürfen diese Version nicht wiederherstellen"
       version_not_found: "Version nicht gefunden"
       model_not_found: "Modell '%{model_name}' nicht gefunden oder nicht verfolgbar"
       restore_failed: "Wiederherstellung fehlgeschlagen: %{error}"
       cannot_restore_create: "Erstell-Ereignisse können nicht wiederhergestellt werden"
+      yaml_class_not_permitted: "Die gespeicherte Version kann nicht gelesen werden (%{message}). Rails lädt nur erlaubte Klassen aus einer YAML-Spalte. Fügen Sie die fehlende Klasse zu config.active_record.yaml_column_permitted_classes in Ihrer Anwendungskonfiguration hinzu."
     messages:
       restore_from_deletion: "Datensatz aus Löschung wiederhergestellt"
       restore_to_previous: "Datensatz auf vorherige Version wiederhergestellt"
@@ -14,3 +17,106 @@ de:
       deleted: "Gelöscht"
     actors:
       system: "System"
+    display:
+      filtered: "[GEFILTERT]"
+      empty: "(leer)"
+      blank: "(leer)"
+      deleted_badge: "Gelöscht"
+      deleted_item: "%{item_type} #%{item_id} (gelöscht)"
+    confirmations:
+      restore_version: "Diese Version wiederherstellen? Dies überschreibt die aktuellen Daten des Datensatzes. Die Änderung erzeugt eine neue Version."
+    formats:
+      datetime: "%d.%m.%Y um %H:%M"
+      date: "%d.%m.%Y"
+    layout:
+      title: "Paper Trail History"
+      brand: "Paper Trail History"
+      all_models: "Alle Modelle"
+    common:
+      models: "Modelle"
+      version_count:
+        one: "1 Version"
+        other: "%{count} Versionen"
+    models:
+      index:
+        title: "Verfolgbare Modelle"
+        model_count:
+          one: "1 Modell"
+          other: "%{count} Modelle"
+        model: "Modell"
+        table_name: "Tabellenname"
+        version_table: "Versionstabelle"
+        total_versions: "Versionen gesamt"
+        actions: "Aktionen"
+        view_model: "Modelldetails anzeigen"
+        view_versions: "Alle Versionen anzeigen"
+        no_models_html: "Keine verfolgbaren Modelle gefunden. Stellen Sie sicher, dass Ihre Modelle <code>has_paper_trail</code> verwenden."
+      show:
+        all_versions: "Alle Versionen"
+        model_information: "Modellinformationen"
+        model_name: "Modellname:"
+        table_name: "Tabellenname:"
+        total_versions: "Versionen gesamt:"
+        recent_versions: "Neueste Versionen"
+        view_all: "Alle anzeigen"
+        no_versions: "Für dieses Modell wurden keine Versionen gefunden."
+      versions:
+        breadcrumb: "Alle Versionen"
+        title: "Alle Versionen - %{model}"
+        no_versions_match: "Keine Versionen gefunden, die Ihren Kriterien entsprechen."
+        clear_filters: "Filter zurücksetzen"
+    records:
+      show:
+        breadcrumb: "Datensatz #%{id}"
+        all_versions: "Alle Versionen"
+        current_record: "Aktueller Datensatz"
+        version_history: "Versionsverlauf"
+        view_all: "Alle anzeigen"
+        no_versions: "Für diesen Datensatz wurden keine Versionen gefunden."
+      versions:
+        breadcrumb: "Alle Versionen"
+        record_breadcrumb: "Datensatz #%{id}"
+        title: "Alle Versionen - %{model} #%{id}"
+        no_versions_match: "Keine Versionen gefunden, die Ihren Kriterien entsprechen."
+        clear_filters: "Filter zurücksetzen"
+    versions:
+      show:
+        breadcrumb: "Version #%{id}"
+        title: "Versionsdetails"
+        restore: "Diese Version wiederherstellen"
+        view_record: "Datensatz anzeigen"
+        version_information: "Versionsinformationen"
+        version_id: "Versions-ID:"
+        event: "Ereignis:"
+        when: "Wann:"
+        who: "Wer:"
+        item: "Objekt:"
+        restore_title: "Version wiederherstellen"
+        restore_text_html: "Dies setzt den Datensatz auf den Stand dieser Version zurück. <strong>Diese Aktion kann nicht rückgängig gemacht werden</strong>, erzeugt aber einen neuen Versionseintrag."
+        cannot_restore_title: "Wiederherstellung nicht möglich"
+        cannot_restore_text: "Diese Version ist die ursprüngliche Erstellung des Datensatzes und kann nicht wiederhergestellt werden."
+        changes_made: "Vorgenommene Änderungen"
+        no_changes: "Für diese Version liegen keine detaillierten Änderungsinformationen vor."
+    shared:
+      versions_table:
+        version: "Version"
+        event: "Ereignis"
+        when: "Wann"
+        who: "Wer"
+        item: "Objekt"
+        actions: "Aktionen"
+        view: "Anzeigen"
+        restore: "Wiederherstellen"
+      version_filters:
+        title: "Filter"
+        toggle: "Umschalten"
+        event: "Ereignis"
+        all_events: "Alle Ereignisse"
+        who: "Wer"
+        anyone: "Alle"
+        from_date: "Von Datum"
+        to_date: "Bis Datum"
+        search: "Änderungen durchsuchen"
+        search_placeholder: "Suchen..."
+        apply: "Filter anwenden"
+        clear: "Zurücksetzen"

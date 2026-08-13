@@ -106,7 +106,48 @@ module PaperTrailHistory
       assert_select '.alert-danger'
     end
 
+    test 'redirects when the model of the version is not trackable' do
+      version = version_of_a_model_that_no_longer_exists
+
+      get version_url(version)
+
+      assert_redirected_to models_path
+    end
+
+    test 'tells the user when the model of the version is not trackable' do
+      version = version_of_a_model_that_no_longer_exists
+
+      get version_url(version)
+      follow_redirect!
+
+      assert_select '.alert-danger'
+    end
+
+    test 'restores the version of the model that the request names' do
+      product = Product.create!(name: 'Original', price: 10, sku: "SKU-#{SecureRandom.hex(4)}")
+      product.update!(name: 'Changed')
+      product_version = product.versions.last
+      PaperTrail::Version.where(id: product_version.id).delete_all
+      create_test_version(id: product_version.id, event: 'create')
+
+      patch restore_version_url(product_version.id, model_name: 'Product')
+
+      assert_equal 'Original', product.reload.name
+    end
+
     private
+
+    # An application that renames or deletes a model keeps the versions of the
+    # old name. The column gets the value directly, because the association
+    # cannot resolve a class that does not exist.
+    def version_of_a_model_that_no_longer_exists
+      version = create_test_version
+      # rubocop:disable Rails/SkipsModelValidations
+      version.update_column(:item_type, 'GoneModel')
+      # rubocop:enable Rails/SkipsModelValidations
+
+      version
+    end
 
     def create_test_version(attributes = {})
       PaperTrail::Version.create!(

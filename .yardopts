@@ -1,0 +1,10 @@
+--markup markdown
+--readme README.md
+--output-dir doc
+--hide-api private
+--no-private
+lib/**/*.rb
+app/models/**/*.rb
+app/helpers/**/*.rb
+-
+CHANGELOG.md

@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-This is a Ruby gem called `paper_trail_history` - a Rails engine that provides a comprehensive web interface for viewing, searching, and managing audit trail versions created by the PaperTrail gem. The gem follows standard Rails engine patterns and supports Rails >= 7.2.
+This is a Ruby gem called `paper_trail_history` - a Rails engine that provides a comprehensive web interface for viewing, searching, and managing audit trail versions created by the PaperTrail gem. The gem follows standard Rails engine patterns and supports Rails >= 8.0.
 
 ## Development Commands
 
@@ -50,7 +50,7 @@ This gem uses the Rails Engine pattern with:
 - Migration paths include both dummy app and engine migrations
 
 ### Dependencies
-- **Core**: Rails >= 7.2, Ruby >= 3.1.0, PaperTrail >= 15.0
+- **Core**: Rails >= 8.0, Ruby >= 3.3.0, PaperTrail >= 15.0, Pagy ~> 43.0
 - **Development**: sqlite3, puma, propshaft
 - **Code Quality**: rubocop-rails (with custom configuration)
 

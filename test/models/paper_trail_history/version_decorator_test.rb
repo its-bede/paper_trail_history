@@ -99,25 +99,73 @@ module PaperTrailHistory
       assert_not decorator.can_restore?
     end
 
-    test 'returns changed attributes' do
-      changes = @decorator.changed_attributes
-      assert_kind_of Array, changes
+    test 'names the attribute that changed' do
+      change = @decorator.attribute_changes.first
 
-      if changes.any?
-        change = changes.first
-        assert change.key?(:attribute)
-        assert change.key?(:old_value)
-        assert change.key?(:new_value)
-      end
+      assert_equal 'name', change[:attribute]
     end
 
-    test 'returns item display name' do
-      display_name = @decorator.item_display_name
-      assert_kind_of String, display_name
-      assert display_name.present?
+    test 'gives the value before the change' do
+      change = @decorator.attribute_changes.first
+
+      assert_equal 'old_name', change[:old_value]
+    end
+
+    test 'gives the value after the change' do
+      change = @decorator.attribute_changes.first
+
+      assert_equal 'new_name', change[:new_value]
+    end
+
+    test 'gives no change for a version without a changeset' do
+      version = create_test_version(object_changes: nil)
+
+      assert_empty VersionDecorator.new(version).attribute_changes
+    end
+
+    test 'hides the old value of an attribute that the host application filters' do
+      change = filtered_change
+
+      assert_equal I18n.t('paper_trail_history.display.filtered'), change[:old_value]
+    end
+
+    test 'hides the new value of an attribute that the host application filters' do
+      change = filtered_change
+
+      assert_equal I18n.t('paper_trail_history.display.filtered'), change[:new_value]
+    end
+
+    test 'shows the value of an attribute that the host application does not filter' do
+      version = create_test_version(object_changes: { name: %w[old_name new_name] }.to_yaml)
+      change = VersionDecorator.new(version).attribute_changes.first
+
+      assert_equal 'new_name', change[:new_value]
+    end
+
+    test 'names the item by its type and id when the record is gone' do
+      version = create_test_version(item_id: 999_999)
+
+      assert_equal 'User #999999 (deleted)', VersionDecorator.new(version).item_display_name
+    end
+
+    test 'names the item by its name when the record exists' do
+      user = User.create!(name: 'Ada Lovelace', email: "vd-#{SecureRandom.hex(4)}@example.com")
+      version = create_test_version(item_id: user.id)
+
+      assert_equal 'Ada Lovelace', VersionDecorator.new(version).item_display_name
     end
 
     private
+
+    # The dummy application filters :email, thus the decorator must not show the
+    # two address values of this change.
+    def filtered_change
+      version = create_test_version(
+        object_changes: { email: %w[old@example.com new@example.com] }.to_yaml
+      )
+
+      VersionDecorator.new(version).attribute_changes.first
+    end
 
     def create_test_version(attributes = {})
       PaperTrail::Version.create!(

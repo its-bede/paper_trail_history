@@ -4,60 +4,104 @@ require 'test_helper'
 
 module PaperTrailHistory
   class TrackableModelTest < ActiveSupport::TestCase
-    test 'finds all trackable models' do
-      trackable_models = TrackableModel.all
-      assert_kind_of Array, trackable_models
-      assert(trackable_models.all? { |model| model.is_a?(TrackableModel) })
+    test 'uses the name of the base class for the item type of a subclass' do
+      assert_equal 'User', TrackableModel.find('Admin').item_type_for_versions
     end
 
-    test 'finds specific model by name' do
-      trackable_models = TrackableModel.all
-      return if trackable_models.empty?
+    test 'finds the versions of a subclass' do
+      admin = Admin.create!(name: 'Grace', email: "sti-#{SecureRandom.hex(4)}@example.com")
 
-      first_model = trackable_models.first
-      found_model = TrackableModel.find(first_model.name)
-
-      assert_not_nil found_model
-      assert_equal first_model.name, found_model.name
+      assert_includes TrackableModel.find('Admin').versions.map(&:item_id), admin.id
     end
 
-    test 'returns nil for non-existent model' do
-      found_model = TrackableModel.find('NonExistentModel')
-      assert_nil found_model
+    test 'does not give the versions of the base class to a subclass' do
+      plain_user = User.create!(name: 'Plain', email: "sti-#{SecureRandom.hex(4)}@example.com")
+
+      assert_not_includes TrackableModel.find('Admin').versions.map(&:item_id), plain_user.id
     end
 
-    test 'returns versions for model' do
-      trackable_models = TrackableModel.all
-      return if trackable_models.empty?
+    test 'gives the versions of a subclass to the base class' do
+      admin = Admin.create!(name: 'Grace', email: "sti-#{SecureRandom.hex(4)}@example.com")
 
-      model = trackable_models.first
-      versions = model.versions
-
-      assert_respond_to versions, :where
-      # versions should be a relation that includes the model's item_type
-      assert_includes versions.to_sql, model.item_type_for_versions
+      assert_includes TrackableModel.find('User').versions.map(&:item_id), admin.id
     end
 
-    test 'returns human name' do
-      trackable_models = TrackableModel.all
-      return if trackable_models.empty?
+    test 'counts only the versions of a subclass' do
+      Admin.create!(name: 'Grace', email: "sti-#{SecureRandom.hex(4)}@example.com")
+      User.create!(name: 'Plain', email: "sti-#{SecureRandom.hex(4)}@example.com")
 
-      model = trackable_models.first
-      human_name = model.human_name
-
-      assert_kind_of String, human_name
-      assert human_name.present?
+      assert_equal Admin.count, TrackableModel.find('Admin').total_versions_count
     end
 
-    test 'returns table name' do
-      trackable_models = TrackableModel.all
-      return if trackable_models.empty?
+    test 'counts the versions of a subclass in the list of all models' do
+      Admin.create!(name: 'Grace', email: "sti-#{SecureRandom.hex(4)}@example.com")
 
-      model = trackable_models.first
-      table_name = model.table_name
+      model = TrackableModel.all_with_counts.find { |trackable| trackable.name == 'Admin' }
 
-      assert_kind_of String, table_name
-      assert table_name.present?
+      assert_equal Admin.count, model.total_versions_count
+    end
+
+    test 'uses only the item type when the version table has no item subtype' do
+      trackable_model = TrackableModel.find('Admin')
+      columns = PaperTrail::Version.column_names - ['item_subtype']
+
+      PaperTrail::Version.stub(:column_names, columns) do
+        assert_no_match(/item_subtype/, trackable_model.versions.to_sql)
+      end
+    end
+
+    test 'finds every model of the dummy application that uses PaperTrail' do
+      assert_equal %w[Admin Comment Document Post Product User], TrackableModel.all.map(&:name)
+    end
+
+    test 'does not read every class of the process to find the models' do
+      TrackableModel.clear_cache!
+      scanned = false
+
+      ObjectSpace.stub(:each_object, lambda { |*|
+        scanned = true
+        []
+      }) do
+        TrackableModel.all
+      end
+
+      assert_not scanned
+    ensure
+      # The stub would leave an empty model list in the cache.
+      TrackableModel.clear_cache!
+    end
+
+    test 'finds a model by name' do
+      assert_equal 'User', TrackableModel.find('User').name
+    end
+
+    test 'gives nil for a model that does not exist' do
+      assert_nil TrackableModel.find('NonExistentModel')
+    end
+
+    test 'gives the versions of the model' do
+      user = User.create!(name: 'Ada', email: "tm-#{SecureRandom.hex(4)}@example.com")
+
+      assert_includes TrackableModel.find('User').versions.map(&:item_id), user.id
+    end
+
+    test 'gives no version of another model' do
+      author = User.create!(name: 'Ada', email: "tm-#{SecureRandom.hex(4)}@example.com")
+      Post.create!(title: 'Hello', content: 'World', user: author)
+
+      assert_equal ['Post'], TrackableModel.find('Post').versions.map(&:item_type).uniq
+    end
+
+    test 'gives the human name of the model in plural' do
+      assert_equal User.model_name.human(count: 2), TrackableModel.find('User').human_name
+    end
+
+    test 'gives the table name of the model' do
+      assert_equal 'users', TrackableModel.find('User').table_name
+    end
+
+    test 'gives the version table of a model with its own version class' do
+      assert_equal 'product_versions', TrackableModel.find('Product').version_table_name
     end
   end
 end

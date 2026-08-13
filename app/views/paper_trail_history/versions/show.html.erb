@@ -1,24 +1,22 @@
 <nav aria-label="breadcrumb">
   <ol class="breadcrumb">
-    <li class="breadcrumb-item"><%= link_to "Models", models_path %></li>
+    <li class="breadcrumb-item"><%= link_to t('paper_trail_history.common.models'), models_path %></li>
     <li class="breadcrumb-item"><%= link_to @trackable_model.human_name, model_path(@trackable_model.name) %></li>
-    <li class="breadcrumb-item active">Version #<%= @version.id %></li>
+    <li class="breadcrumb-item active"><%= t('.breadcrumb', id: @version.id) %></li>
   </ol>
 </nav>
 
 <div class="d-flex justify-content-between align-items-center mb-4">
-  <h1>Version Details</h1>
+  <h1><%= t('.title') %></h1>
   <div>
     <% if @decorated_version.can_restore? %>
-      <%= button_to "Restore This Version",
+      <%= button_to t('.restore'),
           restore_version_link_path(@version),
           method: :patch,
-          data: {
-            confirm: "Are you sure you want to restore this version? This will overwrite the current data."
-          },
+          form: { data: { pth_confirm: t("paper_trail_history.confirmations.restore_version") } },
           class: "btn btn-warning" %>
     <% end %>
-    <%= link_to "View Record", model_record_path(@trackable_model.name, @version.item_id), class: "btn btn-outline-primary" %>
+    <%= link_to t('.view_record'), model_record_path(@trackable_model.name, @version.item_id), class: "btn btn-outline-primary" %>
   </div>
 </div>
 
@@ -26,12 +24,12 @@
   <div class="col-md-6 mb-4">
     <div class="card">
       <div class="card-body">
-        <h5 class="card-title">Version Information</h5>
+        <h5 class="card-title"><%= t('.version_information') %></h5>
         <dl class="row">
-          <dt class="col-sm-4">Version ID:</dt>
+          <dt class="col-sm-4"><%= t('.version_id') %></dt>
           <dd class="col-sm-8"><code><%= @version.id %></code></dd>
           
-          <dt class="col-sm-4">Event:</dt>
+          <dt class="col-sm-4"><%= t('.event') %></dt>
           <dd class="col-sm-8">
             <span class="badge bg-<%= @decorated_version.event_class %>">
               <i class="bi bi-<%= @decorated_version.event == 'create' ? 'plus' : @decorated_version.event == 'update' ? 'pencil' : 'trash' %>"></i>
@@ -39,13 +37,13 @@
             </span>
           </dd>
           
-          <dt class="col-sm-4">When:</dt>
+          <dt class="col-sm-4"><%= t('.when') %></dt>
           <dd class="col-sm-8"><%= @decorated_version.formatted_created_at %></dd>
           
-          <dt class="col-sm-4">Who:</dt>
+          <dt class="col-sm-4"><%= t('.who') %></dt>
           <dd class="col-sm-8"><%= @decorated_version.whodunnit_display %></dd>
           
-          <dt class="col-sm-4">Item:</dt>
+          <dt class="col-sm-4"><%= t('.item') %></dt>
           <dd class="col-sm-8">
             <%= link_to @decorated_version.item_display_name, 
                 model_record_path(@trackable_model.name, @version.item_id),
@@ -62,18 +60,13 @@
         <div class="card-body">
           <h5 class="card-title text-warning">
             <i class="bi bi-exclamation-triangle"></i>
-            Restore Version
+            <%= t('.restore_title') %>
           </h5>
-          <p class="card-text">
-            This will restore the record to the state it was in at this version.
-            <strong>This action cannot be undone</strong>, but will create a new version entry.
-          </p>
-          <%= button_to "Restore This Version",
+          <p class="card-text"><%= t('.restore_text_html') %></p>
+          <%= button_to t('.restore'),
               restore_version_link_path(@version),
               method: :patch,
-              data: {
-                confirm: "Are you sure you want to restore this version? This will overwrite the current data and cannot be undone."
-              },
+              form: { data: { pth_confirm: t("paper_trail_history.confirmations.restore_version") } },
               class: "btn btn-warning" %>
         </div>
       </div>
@@ -82,28 +75,26 @@
         <div class="card-body">
           <h5 class="card-title text-muted">
             <i class="bi bi-info-circle"></i>
-            Cannot Restore
+            <%= t('.cannot_restore_title') %>
           </h5>
-          <p class="card-text text-muted">
-            This version represents the initial creation of the record and cannot be restored.
-          </p>
+          <p class="card-text text-muted"><%= t('.cannot_restore_text') %></p>
         </div>
       </div>
     <% end %>
   </div>
 </div>
 
-<% if @decorated_version.changed_attributes.any? %>
+<% if @decorated_version.attribute_changes.any? %>
   <div class="card">
     <div class="card-header">
       <h5 class="mb-0">
         <i class="bi bi-code-square"></i>
-        Changes Made
+        <%= t('.changes_made') %>
       </h5>
     </div>
     <div class="card-body">
       <div class="diff-container">
-        <% @decorated_version.changed_attributes.each do |change| %>
+        <% @decorated_version.attribute_changes.each do |change| %>
           <div class="diff-section mb-4">
             <div class="diff-header">
               <i class="bi bi-at"></i>
@@ -128,7 +119,7 @@
   <div class="card">
     <div class="card-body text-center text-muted">
       <i class="bi bi-info-circle"></i>
-      No detailed change information available for this version.
+      <%= t('.no_changes') %>
     </div>
   </div>
 <% end %>
