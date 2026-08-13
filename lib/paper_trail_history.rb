@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+require 'monitor'
 require 'pagy'
 require 'paper_trail'
 require 'paper_trail_history/version'

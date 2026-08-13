@@ -10,7 +10,8 @@ The text uses ASD-STE100 Simplified Technical English.
 > that fails now.
 
 **Highest priority:** S1, R1, R9, S2, P1, R2, D2, P2, P3, R4 - all done.
-Next: R3, R6 (robustness), then Q5 (localize the views) and D1 (YARD).
+Next: S3 and S4 (assets, CSP - three tasks made this debt larger), then Q5
+(localize the views), D1 (YARD) and P6.
 
 ---
 
@@ -109,14 +110,17 @@ raises `Date::Error`. The user sees a 500 error.
 `VersionService.parse_date` gives `nil` for text that is not a date. The filter
 then does not use this part. The page stays available.
 
-### R3 - Add a nil check for the trackable model - **Medium**
+### R3 - Add a nil check for the trackable model - **Medium** - DONE (0.3.0)
 
 `app/controllers/paper_trail_history/versions_controller.rb:10`
 
 `TrackableModel.find` can give `nil`, for example after you rename or delete a
 model. The view then calls `@trackable_model.human_name` and the request fails.
 
-- [ ] Check for `nil`. Redirect with a message.
+- [x] Check for `nil`. Redirect with a message.
+
+The test writes the column directly, because a version that points to a class
+which does not exist cannot be made through the association.
 
 ### R4 - Correct the behavior for STI models - **Medium** - DONE (0.3.0)
 
@@ -157,7 +161,7 @@ dialog, "Cancel" keeps the record, and "OK" restores it.
 
 **This makes S4 larger.** The handler is one more inline script without a nonce.
 
-### R6 - Clear the class caches at code reload - **Medium**
+### R6 - Clear the class caches at code reload - **Medium** - DONE (0.3.0)
 
 `app/models/paper_trail_history/trackable_model.rb:14-31,75`,
 `app/models/paper_trail_history/version_service.rb:82`
@@ -166,8 +170,12 @@ dialog, "Cancel" keeps the record, and "OK" restores it.
 code in development. The caches then hold old classes. This gives wrong data and
 holds memory. The memoization is also not thread-safe.
 
-- [ ] Call `clear_cache!` from a `to_prepare` hook in the engine.
-- [ ] Protect the write with a mutex.
+- [x] Call `clear_cache!` from a `to_prepare` hook in the engine.
+- [x] Protect the write with a `Monitor`. A `Monitor` is reentrant, thus the discovery cannot make a deadlock.
+
+Note for the tests: Rails puts the `to_prepare` blocks on
+`Rails.application.reloader`, not on `ActiveSupport::Reloader`. A test must call
+`Rails.application.reloader.prepare!`.
 
 ### R7 - Use the primary key of the model - **Low**
 

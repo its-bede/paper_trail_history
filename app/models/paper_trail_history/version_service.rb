@@ -103,14 +103,22 @@ module PaperTrailHistory
       nil
     end
 
+    # Guards the cache. A Monitor is reentrant, thus the discovery can reach this
+    # class again without a deadlock.
+    LOCK = Monitor.new
+
     def self.all_version_classes
-      @all_version_classes ||= begin
-        classes = Set.new
-        TrackableModel.all.each do |trackable_model|
-          classes.add(trackable_model.version_class)
-        end
-        classes.to_a
-      end
+      @all_version_classes || LOCK.synchronize { @all_version_classes ||= discover_version_classes }
+    end
+
+    def self.discover_version_classes
+      TrackableModel.all.map(&:version_class).uniq
+    end
+
+    # Clears the cached version classes. The engine calls this on each code
+    # reload, because the cache holds class objects that a reload replaces.
+    def self.clear_cache!
+      LOCK.synchronize { @all_version_classes = nil }
     end
 
     def self.filter_by_event(versions, event)

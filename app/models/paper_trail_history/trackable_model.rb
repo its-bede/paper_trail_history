@@ -11,23 +11,28 @@ module PaperTrailHistory
       @cached_version_count = cached_version_count
     end
 
-    def self.all
-      return @all_models if defined?(@all_models) && @all_models
+    # Guards the cache. A Monitor is reentrant, thus the discovery can reach this
+    # class again without a deadlock.
+    LOCK = Monitor.new
 
+    def self.all
+      @all_models || LOCK.synchronize { @all_models ||= discover_all }
+    end
+
+    def self.discover_all
       Rails.application.eager_load!
 
-      # Use a Set to ensure uniqueness by class name
+      # Only keep one instance per class name to avoid duplicates
       trackable_classes = {}
       ObjectSpace.each_object(Class) do |klass|
         next unless klass < ActiveRecord::Base
         next if klass.abstract_class?
         next unless klass.included_modules.include?(PaperTrail::Model::InstanceMethods)
 
-        # Only keep one instance per class name to avoid duplicates
         trackable_classes[klass.name] = new(klass)
       end
 
-      @all_models = trackable_classes.values.sort_by(&:name)
+      trackable_classes.values.sort_by(&:name)
     end
 
     def self.all_with_counts
@@ -77,9 +82,10 @@ module PaperTrailHistory
       all.find { |model| model.name == model_name }
     end
 
-    # Clear cached models (useful in development when adding new trackable models)
+    # Clears the cached models. The engine calls this on each code reload,
+    # because the cache holds class objects that a reload replaces.
     def self.clear_cache!
-      @all_models = nil
+      LOCK.synchronize { @all_models = nil }
     end
 
     # The versions of this model.
