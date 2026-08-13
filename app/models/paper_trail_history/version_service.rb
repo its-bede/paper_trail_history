@@ -119,9 +119,28 @@ module PaperTrailHistory
     end
 
     def self.filter_by_date_range(versions, from_date, to_date)
-      versions = versions.where(created_at: Date.parse(from_date)..) if from_date.present?
-      versions = versions.where(created_at: ..Date.parse(to_date).end_of_day) if to_date.present?
+      from = parse_date(from_date)
+      to = parse_date(to_date)
+
+      versions = versions.where(created_at: from..) if from
+      versions = versions.where(created_at: ..to.end_of_day) if to
       versions
+    end
+
+    # Reads a date out of a URL parameter.
+    #
+    # The value comes from the user, thus it can be any text. An invalid value
+    # gives +nil+, and the caller then does not use this part of the filter. A
+    # wrong date must not stop the page with an error.
+    #
+    # @param value [String, nil]
+    # @return [Date, nil]
+    def self.parse_date(value)
+      return nil if value.blank?
+
+      Date.parse(value.to_s)
+    rescue Date::Error
+      nil
     end
 
     def self.search_object_changes(versions, search_term)

@@ -141,8 +141,10 @@ config.allow_unauthenticated_access = true
 ## Prerequisites
 
 This engine requires:
-- Rails >= 7.2
+- Ruby >= 3.3.0
+- Rails >= 8.0
 - PaperTrail >= 15.0 (configured with `has_paper_trail` in your models)
+- Pagy ~> 43.0 (installed automatically, see the note in the changelog)
 
 Make sure you have PaperTrail properly configured in your Rails application before using this engine.
 
@@ -306,13 +308,13 @@ The dummy app includes:
 For comprehensive compatibility testing, use the provided Gemfiles:
 
 ```bash
-# Test against Rails 7.2
-BUNDLE_GEMFILE=gemfiles/rails_7.2.gemfile bundle install
-BUNDLE_GEMFILE=gemfiles/rails_7.2.gemfile bundle exec rake test
-
 # Test against Rails 8.0
-BUNDLE_GEMFILE=gemfiles/rails_8.0.gemfile bundle install  
+BUNDLE_GEMFILE=gemfiles/rails_8.0.gemfile bundle install
 BUNDLE_GEMFILE=gemfiles/rails_8.0.gemfile bundle exec rake test
+
+# Test against Rails 8.1
+BUNDLE_GEMFILE=gemfiles/rails_8.1.gemfile bundle install
+BUNDLE_GEMFILE=gemfiles/rails_8.1.gemfile bundle exec rake test
 
 # Test against Rails main branch
 BUNDLE_GEMFILE=gemfiles/rails_main.gemfile bundle install

@@ -10,7 +10,7 @@ The text uses ASD-STE100 Simplified Technical English.
 > that fails now.
 
 **Highest priority:** S1 (done), R1 (done), R9 (done), S2 (done), P1 (done).
-Next: P2, P3 (rest), R2.
+Next: P2, P3 (rest), R4.
 
 ---
 
@@ -96,15 +96,18 @@ ID. The service can restore a different record than the one on the screen.
 
 - [x] Give the version object to `restore_version`. Do not search a second time.
 
-### R2 - Invalid date parameters cause an error page - **High**
+### R2 - Invalid date parameters cause an error page - **High** - DONE (0.3.0)
 
 `app/models/paper_trail_history/version_service.rb:100-104`
 
 `Date.parse` gets the URL value without a check. A request with `?from_date=abc`
 raises `Date::Error`. The user sees a 500 error.
 
-- [ ] Parse the date in a safe method. Ignore an invalid value.
-- [ ] Add a test.
+- [x] Parse the date in a safe method. Ignore an invalid value.
+- [x] Add a test.
+
+`VersionService.parse_date` gives `nil` for text that is not a date. The filter
+then does not use this part. The page stays available.
 
 ### R3 - Add a nil check for the trackable model - **Medium**
 
@@ -358,7 +361,7 @@ doc task.
 - [ ] Add `@api private` to internal methods.
 - [ ] Add a `yard` task and a documentation check to the CI.
 
-### D2 - Correct the version numbers in the documents - **High**
+### D2 - Correct the version numbers in the documents - **High** - DONE (0.3.0)
 
 `README.md:40,181-183`, `CLAUDE.md`
 
@@ -366,18 +369,23 @@ The README says "Rails >= 7.2". The gemspec needs Rails >= 8.0 and Ruby >= 3.3.0
 CLAUDE.md says "Rails >= 7.2, Ruby >= 3.1.0". The README tells the user to use
 `gemfiles/rails_7.2.gemfile`. This file does not exist.
 
-- [ ] Correct the README and CLAUDE.md.
-- [ ] Remove the Rails 7.2 instructions.
+- [x] Correct the README and CLAUDE.md.
+- [x] Remove the Rails 7.2 instructions. The README now names the Rails 8.1 Gemfile, which exists.
 
-### D3 - Correct the wrong feature claims - **Low**
+### D3 - Correct the wrong feature claims - **Low** - DONE (0.3.0)
 
 `README.md`
 
 The README lists "Pagination support", but the code has no pagination (see P1).
-The README shows the mount path `/revisions`, but then it tells the user to open
-`http://localhost:3000/paper_trail_history`.
 
-- [ ] Correct the two statements.
+- [x] Correct the statement about pagination. P1 made the claim true, and the README now names the default page size.
+
+**Correction of this review:** the second point of this task was wrong. The
+review said that the README shows the mount path `/revisions` and then tells the
+user to open `http://localhost:3000/paper_trail_history`. The two statements are
+in different sections. The second one belongs to the dummy application, and the
+dummy application mounts the engine at `/paper_trail_history`. Thus the README is
+correct here.
 
 ### D4 - Document the security model - **High** - DONE (0.3.0)
 

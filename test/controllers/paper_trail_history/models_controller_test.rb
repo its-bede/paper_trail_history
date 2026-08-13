@@ -12,6 +12,18 @@ module PaperTrailHistory
       assert_select 'h1', 'Trackable Models'
     end
 
+    test 'shows the version list when the from date of the URL is not a date' do
+      get versions_model_url('User', from_date: 'not-a-date')
+
+      assert_response :success
+    end
+
+    test 'shows the version list when the to date of the URL is not a date' do
+      get versions_model_url('User', to_date: '31.02.2026')
+
+      assert_response :success
+    end
+
     test 'index shows message when no models' do
       TrackableModel.stub :all, [] do
         get models_url

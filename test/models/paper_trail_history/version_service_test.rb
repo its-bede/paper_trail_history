@@ -95,6 +95,40 @@ module PaperTrailHistory
       assert_nil found
     end
 
+    test 'ignores a from date that is not a date' do
+      versions = VersionService.for_model('User', from_date: 'not-a-date')
+
+      assert_equal all_user_versions_count, versions.count
+    end
+
+    test 'ignores a to date that is not a date' do
+      versions = VersionService.for_model('User', to_date: '2026-13-45')
+
+      assert_equal all_user_versions_count, versions.count
+    end
+
+    test 'ignores a date that is not a date for a record' do
+      versions = VersionService.for_record('User', 1, from_date: 'not-a-date')
+
+      assert_equal PaperTrail::Version.where(item_type: 'User', item_id: 1).count, versions.count
+    end
+
+    test 'still uses a from date that is a date' do
+      create_test_version(created_at: 10.days.ago)
+
+      versions = VersionService.for_model('User', from_date: 1.day.ago.to_date.to_s)
+
+      assert_not_includes versions.map(&:created_at).map(&:to_date), 10.days.ago.to_date
+    end
+
+    test 'still uses a to date that is a date' do
+      recent_version = create_test_version(created_at: Time.current)
+
+      versions = VersionService.for_model('User', to_date: 5.days.ago.to_date.to_s)
+
+      assert_not_includes versions.map(&:id), recent_version.id
+    end
+
     test 'restores a record that has timestamps to the values of the previous version' do
       user = changed_user
 
@@ -136,6 +170,10 @@ module PaperTrailHistory
     end
 
     private
+
+    def all_user_versions_count
+      PaperTrail::Version.where(item_type: 'User').count
+    end
 
     # Makes a user with an update version. The user has timestamps, thus the
     # stored YAML holds an ActiveSupport::TimeWithZone value.
