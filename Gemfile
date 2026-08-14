@@ -26,7 +26,7 @@ gem 'simplecov', require: false
 
 # The test suite uses minitest/mock for stubbing. Minitest 6 removed that file,
 # thus the version stays on the 5 series until the stubs are replaced.
-gem 'minitest', '~> 5.25'
+gem 'minitest', '~> 6.0'
 
 # Start debugger with binding.b [https://github.com/ruby/debug]
 # gem "debug", ">= 1.0.0"
